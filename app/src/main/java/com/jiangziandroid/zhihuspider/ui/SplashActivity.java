@@ -81,6 +81,9 @@ public class SplashActivity extends Activity {
                                         @Override
                                         public void run() {
                                             Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                                            //Add Flags to prevent BACK touch to a wrong activity
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                             startActivity(intent);
                                         }
                                     }, 500);

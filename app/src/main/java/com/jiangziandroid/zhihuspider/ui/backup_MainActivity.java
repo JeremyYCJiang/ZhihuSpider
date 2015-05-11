@@ -1,6 +1,5 @@
 package com.jiangziandroid.zhihuspider.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
@@ -10,22 +9,16 @@ import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jiangziandroid.zhihuspider.R;
 import com.jiangziandroid.zhihuspider.adapter.SlideDrawerAdapter;
-import com.parse.ParseUser;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class MainActivity extends ActionBarActivity{
+public class backup_MainActivity extends ActionBarActivity{
 
     @InjectView(R.id.tool_bar) android.support.v7.widget.Toolbar mToolbar;
-    @InjectView(R.id.profile_image) de.hdodenhof.circleimageview.CircleImageView mCircleImageView;
-    @InjectView(R.id.profile_username) TextView mProfileTextView;
-
     //First We Declare Titles And Icons For Our Navigation Drawer List View
     //This Icons And Titles Are holded in an Array as you can see
 
@@ -57,6 +50,7 @@ public class MainActivity extends ActionBarActivity{
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
         setSupportActionBar(mToolbar);
+
 
         mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView); // Assigning the RecyclerView Object to the xml View
 
@@ -99,42 +93,6 @@ public class MainActivity extends ActionBarActivity{
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        //Check if user is logged in
-        /** Whenever you use any signUp or login methods, the user is cached on disk.
-         You can treat this cache as a session, and automatically assume the user is logged in
-         It would be bothersome if the user had to log in every time they open your app.
-         You can avoid this by using the cached currentUser object.
-         **/
-        if (ParseUser.getCurrentUser() != null) {
-            mProfileTextView.setText(ParseUser.getCurrentUser().getUsername());
-            Toast.makeText(MainActivity.this, "Welcome! "+ mProfileTextView.getText(), Toast.LENGTH_SHORT).show();
-            mCircleImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //go to user info page
-                }
-            });
-            mProfileTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //go to user info page
-                }
-            });
-        }
-        else{
-            mProfileTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                }
-            });
-        }
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -147,24 +105,12 @@ public class MainActivity extends ActionBarActivity{
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        switch (id){
-            case R.id.action_logout:
-                if(ParseUser.getCurrentUser() != null){
-                    ParseUser.logOut();
-                    mProfileTextView.setText(R.string.remind_user_login_text);
-                    mProfileTextView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                            startActivity(intent);
-                        }
-                    });
-                    Toast.makeText(MainActivity.this, "Logout successfully!", Toast.LENGTH_SHORT).show();
-                }
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_logout) {
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
-
-
 }

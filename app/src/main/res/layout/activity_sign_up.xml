@@ -1,0 +1,76 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context="com.jiangziandroid.ribbit.ui.SignUpActivity"
+                style="@style/AuthBackground">
+
+
+    <ImageView style="@style/AuthImageView"
+        android:id="@+id/SignUpBgdImageView"/>
+
+
+    <TextView style="@style/AuthTitle"
+        android:id="@+id/SignUpTitle"/>
+
+
+    <TextView style="@style/AuthSubTitle"
+        android:id="@+id/SignUpSubTitle"
+        android:layout_below="@+id/SignUpTitle"/>
+
+
+    <LinearLayout style="@style/AuthEditTextLinearLayout"
+        android:id="@+id/EditTextLinearLayout"
+        android:layout_below="@+id/SignUpSubTitle">
+
+        <EditText style="@style/AuthTextField"
+            android:id="@+id/SignUpNameEditText"
+            android:hint="Name"
+            android:inputType="textPersonName"/>
+
+        <EditText style="@style/AuthTextField"
+            android:id="@+id/SignUpEmailEditText"
+            android:hint="Email"
+            android:inputType="textEmailAddress"/>
+
+        <EditText style="@style/AuthTextField"
+            android:id="@+id/SignUpPwdEditText"
+            android:hint="Password"
+            android:inputType="textPassword"/>
+    </LinearLayout>
+
+
+    <ImageView
+        android:id="@+id/buttonDivider"
+        android:layout_below="@+id/EditTextLinearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/button_divider"/>
+
+    <Button
+        android:id="@+id/SignUpButton"
+        android:text="Sign Up"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:textColor="@color/text_color"
+        android:background="@drawable/button_custom"
+        android:layout_below="@+id/EditTextLinearLayout"
+        android:layout_toLeftOf="@+id/buttonDivider"
+        android:layout_marginLeft="10dp"/>
+
+    <Button
+        android:id="@+id/SignUpCancelButton"
+        android:text="Cancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:textColor="@color/text_color"
+        android:background="@drawable/button_custom"
+        android:layout_below="@+id/EditTextLinearLayout"
+        android:layout_toRightOf="@+id/buttonDivider"
+        android:layout_marginRight="10dp"/>
+
+
+</RelativeLayout>

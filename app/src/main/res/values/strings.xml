@@ -1,17 +1,17 @@
 <resources>
     <string name="app_name">ZhihuSpider</string>
-
-    <string name="title_section1">Section 1</string>
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
-
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-
-    <string name="action_example">Example action</string>
-
-    <string name="action_settings">Settings</string>
+    <string name="app_subTitle">A Jiangzi Project</string>
+    <string name="sign_up_text">Don\'t have an account? Sign Up!</string>
     <string name="title_activity_splash">SplashActivity</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="openDrawer">OpenDrawer</string>
+    <string name="closeDrawer">CloseDrawer</string>
+    <string name="login_error_tittle">Oops! Login failed.</string>
+    <string name="login_error_message">Your email or password is null, please check!</string>
+    <string name="sign_up_error_title">Oops! SignUp failed</string>
+    <string name="sign_up_error_message">\"Your input has empty area, please check! \"</string>
+    <string name="remind_user_login_text">Please Login!</string>
 </resources>

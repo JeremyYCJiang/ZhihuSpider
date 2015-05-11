@@ -6,13 +6,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        android:theme="@style/Theme.ZhihuSpider"
         android:name=".ZhihuSpiderApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@style/Theme.ZhihuSpider" >
+        android:label="@string/app_name">
         <activity
-            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
             android:name=".ui.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,9 +19,21 @@
             </intent-filter>
         </activity>
         <activity
-            android:theme="@style/Theme.AppCompat.Light"
             android:name=".ui.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
+        </activity>
+        <activity
+            android:name=".ui.LoginActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".ui.SignUpActivity"
+            android:parentActivityName=".ui.LoginActivity"
+            android:screenOrientation="portrait" >
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.LoginActivity" />
         </activity>
     </application>
 

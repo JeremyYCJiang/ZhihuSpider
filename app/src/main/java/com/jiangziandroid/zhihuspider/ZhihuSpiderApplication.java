@@ -2,7 +2,10 @@ package com.jiangziandroid.zhihuspider;
 
 import android.app.Application;
 
+import com.jiangziandroid.zhihuspider.utils.ParseConstants;
 import com.parse.Parse;
+import com.parse.ParseInstallation;
+import com.parse.ParseUser;
 
 /**
  * Created by JeremyYCJiang on 2015/5/8.
@@ -20,5 +23,11 @@ public class ZhihuSpiderApplication extends Application {
 //        ParseObject testObject = new ParseObject("TestObject");
 //        testObject.put("foo", "bar");
 //        testObject.saveInBackground();
+    }
+
+    public static void updateParseInstallation(ParseUser user){
+        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+        installation.put(ParseConstants.KEY_USER_ID, user.getObjectId());
+        installation.saveInBackground();
     }
 }
