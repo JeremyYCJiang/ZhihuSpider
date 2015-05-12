@@ -27,8 +27,7 @@
         android:id="@+id/SlidingDrawerRL"
         android:layout_width="320dp"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:background="@color/light_purple_background" >
+        android:layout_gravity="start">
         <RelativeLayout
             android:id="@+id/UserProfileRL"
             android:layout_width="match_parent"
@@ -57,13 +56,17 @@
                 android:paddingRight="8dp"
                 android:textColor="@android:color/white"/>
         </RelativeLayout>
+        <include layout="@layout/slide_drawer_header"
+            android:id="@+id/slideDrawerHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/UserProfileRL"/>
         <android.support.v7.widget.RecyclerView
             android:id="@+id/RecyclerView"
             android:layout_width="320dp"
             android:layout_height="match_parent"
-            android:scrollbars="vertical"
-            android:layout_below="@+id/UserProfileRL">
-        </android.support.v7.widget.RecyclerView>
+            android:layout_below="@+id/slideDrawerHeader"
+            />
     </RelativeLayout>
 
 </android.support.v4.widget.DrawerLayout>

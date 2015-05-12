@@ -15,41 +15,36 @@ import android.widget.Toast;
 
 import com.jiangziandroid.zhihuspider.R;
 import com.jiangziandroid.zhihuspider.adapter.SlideDrawerAdapter;
+import com.jiangziandroid.zhihuspider.model.Theme;
+import com.jiangziandroid.zhihuspider.model.Themes;
 import com.parse.ParseUser;
+import com.squareup.okhttp.Call;
+import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class MainActivity extends ActionBarActivity{
+public class MainActivity extends ActionBarActivity {
 
-    @InjectView(R.id.tool_bar) android.support.v7.widget.Toolbar mToolbar;
+    @InjectView(R.id.tool_bar)  android.support.v7.widget.Toolbar mToolbar;
     @InjectView(R.id.profile_image) de.hdodenhof.circleimageview.CircleImageView mCircleImageView;
     @InjectView(R.id.profile_username) TextView mProfileTextView;
-
-    //First We Declare Titles And Icons For Our Navigation Drawer List View
-    //This Icons And Titles Are holded in an Array as you can see
-
-    String TITLES[] = {"Home","Events","Mail","Shop","Travel"};
-    int ICONS[] = {R.drawable.ic_action_search, R.drawable.ic_action_search, R.drawable.ic_action_search,
-            R.drawable.ic_action_search, R.drawable.ic_action_search,};
-
-    //Similarly we Create a String Resource for the name and email in the header view
-    //And we also create a int resource for profile picture in the header view
-
-    String NAME = "Akash Bangad";
-    String EMAIL = "akash.bangad@android4devs.com";
-    int PROFILE = R.drawable.abc_ic_menu_copy_mtrl_am_alpha;
-
-    RecyclerView mRecyclerView;                           // Declaring RecyclerView
-    RecyclerView.Adapter mAdapter;                        // Declaring Adapter For Recycler View
-    RecyclerView.LayoutManager mLayoutManager;            // Declaring Layout Manager as a linear layout manager
-    DrawerLayout Drawer;                                  // Declaring DrawerLayout
-
-
-    ActionBarDrawerToggle mDrawerToggle;                  // Declaring Action Bar Drawer Toggle
-
-
-
+    @InjectView(R.id.RecyclerView) RecyclerView mRecyclerView; // Declaring RecyclerView
+    @InjectView(R.id.DrawerLayout) DrawerLayout mDrawerLayout; // Declaring DrawerLayout
+    protected Themes mThemes;
+    protected SlideDrawerAdapter mSlideDrawerAdapter;       // Declaring Adapter For Recycler View
+    protected RecyclerView.LayoutManager mLayoutManager;    // Declaring Layout Manager as a linear layout manager
+    protected ActionBarDrawerToggle mDrawerToggle;          // Declaring Action Bar Drawer Toggle
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,29 +52,16 @@ public class MainActivity extends ActionBarActivity{
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
         setSupportActionBar(mToolbar);
-
-        mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView); // Assigning the RecyclerView Object to the xml View
-
-        mRecyclerView.setHasFixedSize(true);                            // Letting the system know that the list objects are of fixed size
-
-        mAdapter = new SlideDrawerAdapter(TITLES,ICONS,NAME,EMAIL,PROFILE);       // Creating the Adapter of MyAdapter class(which we are going to see in a bit)
-        // And passing the titles,icons,header view name, header view email,
-        // and header view profile picture
-
-        mRecyclerView.setAdapter(mAdapter);                              // Setting the adapter to RecyclerView
-
-        mLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
-
-        mRecyclerView.setLayoutManager(mLayoutManager);                 // Setting the layout Manager
-
-
-        Drawer = (DrawerLayout) findViewById(R.id.DrawerLayout);        // Drawer object Assigned to the view
-        mDrawerToggle = new ActionBarDrawerToggle(this,Drawer,mToolbar,R.string.openDrawer,R.string.closeDrawer){
-
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        // This drawable shows a Hamburger icon when drawer is closed and an arrow when drawer is open.
+        // It animates between these two states as the drawer opens.
+        mDrawerToggle = new ActionBarDrawerToggle(MainActivity.this, mDrawerLayout, mToolbar,
+                R.string.openDrawer, R.string.closeDrawer) {
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                // code here will execute once the drawer is opened( As I dont want anything happened whe drawer is
+                // code here will execute once the drawer is opened( As I don't want anything happened when drawer is
                 // open I am not going to put anything here)
             }
 
@@ -88,15 +70,15 @@ public class MainActivity extends ActionBarActivity{
                 super.onDrawerClosed(drawerView);
                 // Code here will execute once drawer is closed
             }
+        };
+        // Drawer Toggle Object Made
+        mDrawerLayout.setDrawerListener(mDrawerToggle);  // Drawer Listener set to the Drawer toggle
+        mDrawerToggle.syncState(); // Finally we set the drawer toggle sync State
 
-
-
-        }; // Drawer Toggle Object Made
-        Drawer.setDrawerListener(mDrawerToggle); // Drawer Listener set to the Drawer toggle
-        mDrawerToggle.syncState();               // Finally we set the drawer toggle sync State
-
-
+        //update RecyclerView
+        getZhihuThemes();
     }
+
 
     @Override
     protected void onResume() {
@@ -109,7 +91,7 @@ public class MainActivity extends ActionBarActivity{
          **/
         if (ParseUser.getCurrentUser() != null) {
             mProfileTextView.setText(ParseUser.getCurrentUser().getUsername());
-            Toast.makeText(MainActivity.this, "Welcome! "+ mProfileTextView.getText(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Welcome! " + mProfileTextView.getText(), Toast.LENGTH_SHORT).show();
             mCircleImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -122,8 +104,7 @@ public class MainActivity extends ActionBarActivity{
                     //go to user info page
                 }
             });
-        }
-        else{
+        } else {
             mProfileTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -147,9 +128,9 @@ public class MainActivity extends ActionBarActivity{
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        switch (id){
+        switch (id) {
             case R.id.action_logout:
-                if(ParseUser.getCurrentUser() != null){
+                if (ParseUser.getCurrentUser() != null) {
                     ParseUser.logOut();
                     mProfileTextView.setText(R.string.remind_user_login_text);
                     mProfileTextView.setOnClickListener(new View.OnClickListener() {
@@ -167,4 +148,66 @@ public class MainActivity extends ActionBarActivity{
     }
 
 
+    public void getZhihuThemes() {
+        String themesUrl = "http://news-at.zhihu.com/api/4/themes";
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(themesUrl).build();
+        Call call = client.newCall(request);
+        //Transfer synchronous to asynchronous
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+                // execute() is synchronous method, so delete it
+                // Response response = call.execute();
+                String jsonData = response.body().string();
+                try {
+                    mThemes = getThemesDetails(jsonData);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSlideDrawerAdapter = new SlideDrawerAdapter(MainActivity.this, mThemes);
+                            if (mRecyclerView.getAdapter() == null) {
+                                //initial the adapter
+                                mRecyclerView.setAdapter(mSlideDrawerAdapter);
+                                mRecyclerView.setHasFixedSize(true);
+                            }
+                            else {
+                                //refill the adapter
+                                ((SlideDrawerAdapter) (mRecyclerView.getAdapter())).refill(mThemes.getThemes());
+                            }
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            private Themes getThemesDetails(String jsonData) throws JSONException {
+                Themes themes = new Themes();
+                themes.setThemes(getThemeDetails(jsonData));
+                return themes;
+            }
+
+            private ArrayList<Theme> getThemeDetails(String jsonData) throws JSONException {
+                JSONObject themes = new JSONObject(jsonData);
+                JSONArray others = themes.getJSONArray("others");
+                ArrayList<Theme> themeArray = new ArrayList<>();
+                for (int i = 0; i < others.length(); i++) {
+                    JSONObject jsonTheme = others.getJSONObject(i);
+                    Theme theme = new Theme();
+                    theme.setThemeId(jsonTheme.getInt("id"));
+                    theme.setThemeName(jsonTheme.getString("name"));
+                    theme.setThumbnailUri(jsonTheme.getString("thumbnail"));
+                    theme.setDescription(jsonTheme.getString("description"));
+                    themeArray.add(theme);
+                }
+                return themeArray;
+            }
+        });
+    }
 }
+
