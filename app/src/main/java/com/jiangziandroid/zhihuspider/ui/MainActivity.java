@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,12 +18,14 @@ import com.jiangziandroid.zhihuspider.R;
 import com.jiangziandroid.zhihuspider.adapter.SlideDrawerAdapter;
 import com.jiangziandroid.zhihuspider.model.Theme;
 import com.jiangziandroid.zhihuspider.model.Themes;
+import com.jiangziandroid.zhihuspider.utils.ParseConstants;
 import com.parse.ParseUser;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,6 +40,7 @@ import butterknife.InjectView;
 public class MainActivity extends ActionBarActivity {
 
     @InjectView(R.id.tool_bar)  android.support.v7.widget.Toolbar mToolbar;
+    @InjectView(R.id.UserProfileRL) RelativeLayout mUserProfileRL;
     @InjectView(R.id.profile_image) de.hdodenhof.circleimageview.CircleImageView mCircleImageView;
     @InjectView(R.id.profile_username) TextView mProfileTextView;
     @InjectView(R.id.RecyclerView) RecyclerView mRecyclerView; // Declaring RecyclerView
@@ -91,17 +95,14 @@ public class MainActivity extends ActionBarActivity {
          **/
         if (ParseUser.getCurrentUser() != null) {
             mProfileTextView.setText(ParseUser.getCurrentUser().getUsername());
-            Toast.makeText(MainActivity.this, "Welcome! " + mProfileTextView.getText(), Toast.LENGTH_SHORT).show();
-            mCircleImageView.setOnClickListener(new View.OnClickListener() {
+            Picasso.with(this).load(ParseUser.getCurrentUser().getString(ParseConstants.KEY_USER_PHOTO_STRING_URI))
+                    .resize(96, 96).centerCrop().into(mCircleImageView);
+            mUserProfileRL.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     //go to user info page
-                }
-            });
-            mProfileTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //go to user info page
+                    Intent intent = new Intent(MainActivity.this, UserInfoActivity.class);
+                    startActivity(intent);
                 }
             });
         } else {

@@ -22,7 +22,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Favourite"
+            android:text="@string/slide_header_text_favourite"
             android:id="@+id/textView"
             android:layout_gravity="center_horizontal"/>
     </LinearLayout>
@@ -43,7 +43,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Message"
+            android:text="@string/slide_header_text_message"
             android:id="@+id/textView2"
             android:layout_gravity="center_horizontal"/>
     </LinearLayout>
@@ -64,7 +64,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Settings"
+            android:text="@string/slide_header_text_settings"
             android:id="@+id/textView3"
             android:layout_gravity="center_horizontal"/>
     </LinearLayout>

@@ -38,7 +38,7 @@
                 android:id="@+id/profile_image"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/profile_image"
+                android:src="@drawable/ic_action_carema"
                 app:border_width="1dp"
                 app:border_color="#482c6f"
                 android:layout_alignParentLeft="true"
@@ -56,16 +56,21 @@
                 android:paddingRight="8dp"
                 android:textColor="@android:color/white"/>
         </RelativeLayout>
-        <include layout="@layout/slide_drawer_header"
-            android:id="@+id/slideDrawerHeader"
+        <include layout="@layout/slide_drawer_tools_header"
+            android:id="@+id/slideDrawerToolsHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/UserProfileRL"/>
+        <include layout="@layout/slide_drawer_homepage_header"
+                 android:id="@+id/slideDrawerHomeHeader"
+                 android:layout_width="match_parent"
+                 android:layout_height="60dp"
+                 android:layout_below="@+id/slideDrawerToolsHeader"/>
         <android.support.v7.widget.RecyclerView
             android:id="@+id/RecyclerView"
             android:layout_width="320dp"
             android:layout_height="match_parent"
-            android:layout_below="@+id/slideDrawerHeader"
+            android:layout_below="@+id/slideDrawerHomeHeader"
             />
     </RelativeLayout>
 
