@@ -14,11 +14,20 @@
             android:id="@+id/tool_bar"
             layout="@layout/tool_bar"/>
 
-        <TextView
-            android:text="@string/hello_world"
-            android:layout_width="wrap_content"
+        <cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager
+            android:id="@+id/imageViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="225dp"
+            android:layout_below="@+id/tool_bar">
+        </cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager>
+        <com.viewpagerindicator.CirclePageIndicator
+            android:id="@+id/viewpagerIndicator"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/tool_bar"/>
+            android:layout_alignBottom="@+id/imageViewPager"
+            android:layout_marginBottom="5dp">
+        </com.viewpagerindicator.CirclePageIndicator>
+
     </RelativeLayout>
 
 

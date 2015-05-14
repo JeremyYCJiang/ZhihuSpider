@@ -16,9 +16,13 @@ import android.widget.Toast;
 
 import com.jiangziandroid.zhihuspider.R;
 import com.jiangziandroid.zhihuspider.adapter.SlideDrawerAdapter;
+import com.jiangziandroid.zhihuspider.adapter.SlideImageAdapter;
+import com.jiangziandroid.zhihuspider.model.LatestNews;
 import com.jiangziandroid.zhihuspider.model.Theme;
 import com.jiangziandroid.zhihuspider.model.Themes;
+import com.jiangziandroid.zhihuspider.model.TopStory;
 import com.jiangziandroid.zhihuspider.utils.ParseConstants;
+import com.jiangziandroid.zhihuspider.utils.ZhihuAPI;
 import com.parse.ParseUser;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
@@ -26,6 +30,7 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.picasso.Picasso;
+import com.viewpagerindicator.CirclePageIndicator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,10 +50,23 @@ public class MainActivity extends ActionBarActivity {
     @InjectView(R.id.profile_username) TextView mProfileTextView;
     @InjectView(R.id.RecyclerView) RecyclerView mRecyclerView; // Declaring RecyclerView
     @InjectView(R.id.DrawerLayout) DrawerLayout mDrawerLayout; // Declaring DrawerLayout
+    @InjectView(R.id.SlidingDrawerRL) RelativeLayout mSlidingDrawerRL;
+    @InjectView(R.id.slideDrawerHomeHeader)  RelativeLayout mHomePageRL;
     protected Themes mThemes;
+    protected LatestNews mLatestNews;
     protected SlideDrawerAdapter mSlideDrawerAdapter;       // Declaring Adapter For Recycler View
     protected RecyclerView.LayoutManager mLayoutManager;    // Declaring Layout Manager as a linear layout manager
     protected ActionBarDrawerToggle mDrawerToggle;          // Declaring Action Bar Drawer Toggle
+    protected com.viewpagerindicator.CirclePageIndicator mCirclePageIndicator;
+    /**
+     * The pager widget, which handles animation and allows swiping horizontally to access previous
+     * and next wizard steps.
+     */
+    protected cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager mAutoScrollViewPager;
+    /**
+     * The pager adapter, which provides the pages to the view pager widget.
+     */
+    protected SlideImageAdapter mSlideImageAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +97,18 @@ public class MainActivity extends ActionBarActivity {
         mDrawerLayout.setDrawerListener(mDrawerToggle);  // Drawer Listener set to the Drawer toggle
         mDrawerToggle.syncState(); // Finally we set the drawer toggle sync State
 
+        mHomePageRL.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Close the slidingDrawer and show the main page
+                mDrawerLayout.closeDrawer(mSlidingDrawerRL);
+            }
+        });
+        // Instantiate a ViewPager and a PagerAdapter.
+        mAutoScrollViewPager = (cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager)
+                findViewById(R.id.imageViewPager);
+        //update sliding image view pager
+        getLatestNews();
         //update RecyclerView
         getZhihuThemes();
     }
@@ -134,6 +164,7 @@ public class MainActivity extends ActionBarActivity {
                 if (ParseUser.getCurrentUser() != null) {
                     ParseUser.logOut();
                     mProfileTextView.setText(R.string.remind_user_login_text);
+                    mCircleImageView.setImageResource(R.drawable.ic_action_carema);
                     mProfileTextView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -150,7 +181,7 @@ public class MainActivity extends ActionBarActivity {
 
 
     public void getZhihuThemes() {
-        String themesUrl = "http://news-at.zhihu.com/api/4/themes";
+        String themesUrl = ZhihuAPI.API_THEMES;
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(themesUrl).build();
         Call call = client.newCall(request);
@@ -210,5 +241,61 @@ public class MainActivity extends ActionBarActivity {
             }
         });
     }
+
+    public void getLatestNews(){
+        String latestNewsUri = ZhihuAPI.API_LATEST_NEWS;
+        OkHttpClient client = new OkHttpClient();
+        final Request request = new Request.Builder().url(latestNewsUri).build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+            }
+            @Override
+            public void onResponse(Response response) throws IOException {
+                String jsonData = response.body().string();
+                try {
+                    mLatestNews = getNewsDetails(jsonData);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSlideImageAdapter = new SlideImageAdapter(MainActivity.this,
+                                    getSupportFragmentManager(), mLatestNews.getTopStories());
+                            mAutoScrollViewPager.setAdapter(mSlideImageAdapter);
+                            //Bind the viewPager indicator to the adapter
+                            mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.viewpagerIndicator);
+                            mCirclePageIndicator.setViewPager(mAutoScrollViewPager);
+                            mAutoScrollViewPager.setInterval(5000);
+                            mAutoScrollViewPager.startAutoScroll();
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            private LatestNews getNewsDetails(String jsonData) throws JSONException {
+                LatestNews latestNews = new LatestNews();
+                latestNews.setTopStories(getTopStoriesDetails(jsonData));
+                return latestNews;
+            }
+
+            private ArrayList<TopStory> getTopStoriesDetails(String jsonData) throws JSONException {
+                JSONObject latestNews = new JSONObject(jsonData);
+                JSONArray top_stories = latestNews.getJSONArray("top_stories");
+                ArrayList<TopStory> topStoriesArray = new ArrayList<>();
+                for (int i =0 ; i<top_stories.length(); i++){
+                    JSONObject jsonTopStory = top_stories.getJSONObject(i);
+                    TopStory topStory = new TopStory();
+                    topStory.setImageStringUri(jsonTopStory.getString("image"));
+                    topStory.setTitle(jsonTopStory.getString("title"));
+                    topStoriesArray.add(topStory);
+                }
+                return topStoriesArray;
+            }
+        });
+    }
+
+
 }
 
