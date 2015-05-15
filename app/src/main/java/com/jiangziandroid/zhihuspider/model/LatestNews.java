@@ -6,15 +6,24 @@ import java.util.ArrayList;
  * Created by JeremyYCJiang on 2015/5/14.
  */
 public class LatestNews {
-    private String date;
+    private String mDate;
     private ArrayList<TopStory> mTopStories;
+    private ArrayList<Story> mStories;
+
+    public ArrayList<Story> getStories() {
+        return mStories;
+    }
+
+    public void setStories(ArrayList<Story> stories) {
+        mStories = stories;
+    }
 
     public String getDate() {
-        return date;
+        return mDate;
     }
 
     public void setDate(String date) {
-        this.date = date;
+        mDate = date;
     }
 
     public ArrayList<TopStory> getTopStories() {

@@ -2,11 +2,14 @@ package com.jiangziandroid.zhihuspider.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,9 +18,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jiangziandroid.zhihuspider.R;
+import com.jiangziandroid.zhihuspider.adapter.HomepageRecyclerViewAdapter;
 import com.jiangziandroid.zhihuspider.adapter.SlideDrawerAdapter;
-import com.jiangziandroid.zhihuspider.adapter.SlideImageAdapter;
 import com.jiangziandroid.zhihuspider.model.LatestNews;
+import com.jiangziandroid.zhihuspider.model.Story;
 import com.jiangziandroid.zhihuspider.model.Theme;
 import com.jiangziandroid.zhihuspider.model.Themes;
 import com.jiangziandroid.zhihuspider.model.TopStory;
@@ -30,7 +34,6 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.picasso.Picasso;
-import com.viewpagerindicator.CirclePageIndicator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,31 +45,26 @@ import java.util.ArrayList;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements SwipeRefreshLayout.OnRefreshListener{
 
     @InjectView(R.id.tool_bar)  android.support.v7.widget.Toolbar mToolbar;
     @InjectView(R.id.UserProfileRL) RelativeLayout mUserProfileRL;
     @InjectView(R.id.profile_image) de.hdodenhof.circleimageview.CircleImageView mCircleImageView;
     @InjectView(R.id.profile_username) TextView mProfileTextView;
-    @InjectView(R.id.RecyclerView) RecyclerView mRecyclerView; // Declaring RecyclerView
+    @InjectView(R.id.SlideDrawerRecyclerView) RecyclerView mSlideDrawerRecyclerView; // Declaring RecyclerView
+    @InjectView(R.id.HomepageRecyclerView) RecyclerView mHomepageRecyclerView;
     @InjectView(R.id.DrawerLayout) DrawerLayout mDrawerLayout; // Declaring DrawerLayout
     @InjectView(R.id.SlidingDrawerRL) RelativeLayout mSlidingDrawerRL;
     @InjectView(R.id.slideDrawerHomeHeader)  RelativeLayout mHomePageRL;
+    @InjectView(R.id.swipeRefreshLayout) SwipeRefreshLayout mSwipeRefreshLayout;
     protected Themes mThemes;
     protected LatestNews mLatestNews;
     protected SlideDrawerAdapter mSlideDrawerAdapter;       // Declaring Adapter For Recycler View
-    protected RecyclerView.LayoutManager mLayoutManager;    // Declaring Layout Manager as a linear layout manager
+    protected HomepageRecyclerViewAdapter mHomepageRecyclerViewAdapter;
+    protected RecyclerView.LayoutManager mSlideDrawerLayoutManager;    // Declaring Layout Manager as a linear layout manager
+    protected RecyclerView.LayoutManager mHomepageLayoutManager;
     protected ActionBarDrawerToggle mDrawerToggle;          // Declaring Action Bar Drawer Toggle
-    protected com.viewpagerindicator.CirclePageIndicator mCirclePageIndicator;
-    /**
-     * The pager widget, which handles animation and allows swiping horizontally to access previous
-     * and next wizard steps.
-     */
-    protected cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager mAutoScrollViewPager;
-    /**
-     * The pager adapter, which provides the pages to the view pager widget.
-     */
-    protected SlideImageAdapter mSlideImageAdapter;
+    protected FragmentManager mFragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,8 +72,13 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
         setSupportActionBar(mToolbar);
-        mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
+        mSlideDrawerLayoutManager = new LinearLayoutManager(this);
+        mSlideDrawerRecyclerView.setLayoutManager(mSlideDrawerLayoutManager);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout.setColorSchemeResources(
+                R.color.swipeRefresh1, R.color.swipeRefresh2, R.color.swipeRefresh3, R.color.swipeRefresh4);
+        mHomepageLayoutManager = new LinearLayoutManager(this);
+        mHomepageRecyclerView.setLayoutManager(mHomepageLayoutManager);
         // This drawable shows a Hamburger icon when drawer is closed and an arrow when drawer is open.
         // It animates between these two states as the drawer opens.
         mDrawerToggle = new ActionBarDrawerToggle(MainActivity.this, mDrawerLayout, mToolbar,
@@ -104,12 +107,9 @@ public class MainActivity extends ActionBarActivity {
                 mDrawerLayout.closeDrawer(mSlidingDrawerRL);
             }
         });
-        // Instantiate a ViewPager and a PagerAdapter.
-        mAutoScrollViewPager = (cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager)
-                findViewById(R.id.imageViewPager);
-        //update sliding image view pager
+        //update main page content
         getLatestNews();
-        //update RecyclerView
+        //update slide drawer themes
         getZhihuThemes();
     }
 
@@ -202,14 +202,14 @@ public class MainActivity extends ActionBarActivity {
                         @Override
                         public void run() {
                             mSlideDrawerAdapter = new SlideDrawerAdapter(MainActivity.this, mThemes);
-                            if (mRecyclerView.getAdapter() == null) {
+                            if (mSlideDrawerRecyclerView.getAdapter() == null) {
                                 //initial the adapter
-                                mRecyclerView.setAdapter(mSlideDrawerAdapter);
-                                mRecyclerView.setHasFixedSize(true);
+                                mSlideDrawerRecyclerView.setAdapter(mSlideDrawerAdapter);
+                                mSlideDrawerRecyclerView.setHasFixedSize(true);
                             }
                             else {
                                 //refill the adapter
-                                ((SlideDrawerAdapter) (mRecyclerView.getAdapter())).refill(mThemes.getThemes());
+                                ((SlideDrawerAdapter) (mSlideDrawerRecyclerView.getAdapter())).refill(mThemes.getThemes());
                             }
                         }
                     });
@@ -243,30 +243,42 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void getLatestNews(){
-        String latestNewsUri = ZhihuAPI.API_LATEST_NEWS;
+        final String latestNewsUri = ZhihuAPI.API_LATEST_NEWS;
         OkHttpClient client = new OkHttpClient();
         final Request request = new Request.Builder().url(latestNewsUri).build();
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
+                if(mSwipeRefreshLayout.isRefreshing()){
+                    mSwipeRefreshLayout.setRefreshing(false);
+                }
             }
             @Override
             public void onResponse(Response response) throws IOException {
+                if(mSwipeRefreshLayout.isRefreshing()){
+                    mSwipeRefreshLayout.setRefreshing(false);
+                    Log.e(getApplication().getPackageName(), "Get data successfully! ^.^");
+                }
                 String jsonData = response.body().string();
                 try {
                     mLatestNews = getNewsDetails(jsonData);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mSlideImageAdapter = new SlideImageAdapter(MainActivity.this,
-                                    getSupportFragmentManager(), mLatestNews.getTopStories());
-                            mAutoScrollViewPager.setAdapter(mSlideImageAdapter);
-                            //Bind the viewPager indicator to the adapter
-                            mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.viewpagerIndicator);
-                            mCirclePageIndicator.setViewPager(mAutoScrollViewPager);
-                            mAutoScrollViewPager.setInterval(5000);
-                            mAutoScrollViewPager.startAutoScroll();
+                            mFragmentManager = getSupportFragmentManager();
+                            mHomepageRecyclerViewAdapter = new HomepageRecyclerViewAdapter(MainActivity.this,
+                                    mLatestNews, mFragmentManager);
+                            if (mHomepageRecyclerView.getAdapter() == null) {
+                                //initial the adapter
+                                mHomepageRecyclerView.setAdapter(mHomepageRecyclerViewAdapter);
+                                mHomepageRecyclerView.setHasFixedSize(true);
+                            }
+//                            else {
+//                                //refill the adapter
+//                                ((HomepageRecyclerViewAdapter) (mHomepageRecyclerView.getAdapter())).
+//                                        refill(mLatestNews.getStories());
+//                            }
                         }
                     });
                 } catch (JSONException e) {
@@ -276,9 +288,16 @@ public class MainActivity extends ActionBarActivity {
 
             private LatestNews getNewsDetails(String jsonData) throws JSONException {
                 LatestNews latestNews = new LatestNews();
+                latestNews.setDate(getDate(jsonData));
                 latestNews.setTopStories(getTopStoriesDetails(jsonData));
+                latestNews.setStories(getStoriesDetails(jsonData));
                 return latestNews;
             }
+
+            private String getDate(String jsonData) throws JSONException {
+                JSONObject latestNews = new JSONObject(jsonData);
+                return latestNews.getString("date");
+             }
 
             private ArrayList<TopStory> getTopStoriesDetails(String jsonData) throws JSONException {
                 JSONObject latestNews = new JSONObject(jsonData);
@@ -293,9 +312,34 @@ public class MainActivity extends ActionBarActivity {
                 }
                 return topStoriesArray;
             }
+
+            private ArrayList<Story> getStoriesDetails(String jsonData) throws JSONException {
+                JSONObject latestNews = new JSONObject(jsonData);
+                JSONArray stories = latestNews.getJSONArray("stories");
+                ArrayList<Story> storiesArray = new ArrayList<>();
+                for (int i =0 ; i<stories.length(); i++){
+                    JSONObject jsonStory = stories.getJSONObject(i);
+                    Story story = new Story();
+                    story.setTitle(jsonStory.getString("title"));
+                    story.setImageStringUri(jsonStory.getJSONArray("images").getString(0));
+                    if(jsonStory.isNull("multipic")){
+                        story.setMultipic(false);
+                    }else {
+                        story.setMultipic(true);
+                    }
+                    storiesArray.add(story);
+                }
+                return storiesArray;
+            }
+
         });
     }
 
+
+    @Override
+    public void onRefresh() {
+        getLatestNews();
+    }
 
 }
 

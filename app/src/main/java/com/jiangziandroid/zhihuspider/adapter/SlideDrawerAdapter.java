@@ -45,8 +45,8 @@ public class SlideDrawerAdapter extends RecyclerView.Adapter<SlideDrawerAdapter.
 
         public SlideDrawerViewHolder(View itemView) {
             super(itemView);
-            mItemIconImageView = (ImageView) itemView.findViewById(R.id.rowIcon);
-            mItemTextTextView = (TextView) itemView.findViewById(R.id.rowText);
+            mItemIconImageView = (ImageView) itemView.findViewById(R.id.rowHomepageIcon);
+            mItemTextTextView = (TextView) itemView.findViewById(R.id.rowTimeTitleText);
         }
     }
 

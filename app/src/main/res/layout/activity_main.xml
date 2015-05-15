@@ -14,19 +14,22 @@
             android:id="@+id/tool_bar"
             layout="@layout/tool_bar"/>
 
-        <cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager
-            android:id="@+id/imageViewPager"
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefreshLayout"
             android:layout_width="match_parent"
-            android:layout_height="225dp"
+            android:layout_height="match_parent"
             android:layout_below="@+id/tool_bar">
-        </cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager>
-        <com.viewpagerindicator.CirclePageIndicator
-            android:id="@+id/viewpagerIndicator"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/imageViewPager"
-            android:layout_marginBottom="5dp">
-        </com.viewpagerindicator.CirclePageIndicator>
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/HomepageRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/light_purple_background"
+                android:scrollbars="vertical"
+                android:paddingBottom="@dimen/content_item_vertical_margin"
+                android:clipToPadding="false">
+            </android.support.v7.widget.RecyclerView>
+        </android.support.v4.widget.SwipeRefreshLayout>
+
 
     </RelativeLayout>
 
@@ -76,11 +79,12 @@
                  android:layout_height="60dp"
                  android:layout_below="@+id/slideDrawerToolsHeader"/>
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/RecyclerView"
+            android:id="@+id/SlideDrawerRecyclerView"
             android:layout_width="320dp"
             android:layout_height="match_parent"
-            android:layout_below="@+id/slideDrawerHomeHeader"
-            />
+            android:layout_below="@+id/slideDrawerHomeHeader">
+        </android.support.v7.widget.RecyclerView>
+
     </RelativeLayout>
 
 </android.support.v4.widget.DrawerLayout>

@@ -7,4 +7,6 @@
          https://developer.android.com/design/patterns/navigation-drawer.html -->
     <dimen name="navigation_drawer_width">240dp</dimen>
     <dimen name="tool_bar_height">56dp</dimen>
+    <dimen name="content_item_horizontal_margin">8dp</dimen>
+    <dimen name="content_item_vertical_margin">8dp</dimen>
 </resources>
