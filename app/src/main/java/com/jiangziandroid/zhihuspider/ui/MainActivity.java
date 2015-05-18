@@ -256,16 +256,16 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             }
             @Override
             public void onResponse(Response response) throws IOException {
-                if(mSwipeRefreshLayout.isRefreshing()){
-                    mSwipeRefreshLayout.setRefreshing(false);
-                    Log.e(getApplication().getPackageName(), "Get data successfully! ^.^");
-                }
                 String jsonData = response.body().string();
                 try {
                     mLatestNews = getNewsDetails(jsonData);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            if(mSwipeRefreshLayout.isRefreshing()){
+                                mSwipeRefreshLayout.setRefreshing(false);
+                                Log.e(getApplication().getPackageName(), "Get data successfully! ^.^");
+                            }
                             mFragmentManager = getSupportFragmentManager();
                             mHomepageRecyclerViewAdapter = new HomepageRecyclerViewAdapter(MainActivity.this,
                                     mLatestNews, mFragmentManager);
@@ -306,6 +306,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                 for (int i =0 ; i<top_stories.length(); i++){
                     JSONObject jsonTopStory = top_stories.getJSONObject(i);
                     TopStory topStory = new TopStory();
+                    topStory.setStoryId(jsonTopStory.getLong("id"));
                     topStory.setImageStringUri(jsonTopStory.getString("image"));
                     topStory.setTitle(jsonTopStory.getString("title"));
                     topStoriesArray.add(topStory);
@@ -320,6 +321,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                 for (int i =0 ; i<stories.length(); i++){
                     JSONObject jsonStory = stories.getJSONObject(i);
                     Story story = new Story();
+                    story.setStoryId(jsonStory.getLong("id"));
                     story.setTitle(jsonStory.getString("title"));
                     story.setImageStringUri(jsonStory.getJSONArray("images").getString(0));
                     if(jsonStory.isNull("multipic")){

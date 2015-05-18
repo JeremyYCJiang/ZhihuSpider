@@ -4,9 +4,19 @@ package com.jiangziandroid.zhihuspider.model;
  * Created by JeremyYCJiang on 2015/5/14.
  */
 public class Story {
+    private long mStoryId;
+    private boolean mMultipic;
     private String mImageStringUri;
     private String mTitle;
-    private boolean mMultipic;
+
+
+    public long getStoryId() {
+        return mStoryId;
+    }
+
+    public void setStoryId(long storyId) {
+        mStoryId = storyId;
+    }
 
     public boolean isMultipic() {
         return mMultipic;

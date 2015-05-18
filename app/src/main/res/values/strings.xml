@@ -27,4 +27,6 @@
         <item>从相册挑一张</item>
         <item>以后再说</item>
     </string-array>
+    <string name="title_activity_story">StoryActivity</string>
+    <string name="recommenders">test</string>
 </resources>

@@ -29,9 +29,11 @@ public class SlideImageAdapter extends FragmentStatePagerAdapter {
         // getItem is called to instantiate the fragment for the given page.
         String imageStringUri = mTopStories.get(position).getImageStringUri();
         String imageTitle = mTopStories.get(position).getTitle();
+        long storyId = mTopStories.get(position).getStoryId();
         SlideImageFragment slideImageFragment = new SlideImageFragment();
         //use bundle to pass data to fragment
         Bundle bundle = new Bundle();
+        bundle.putLong("StoryId",storyId);
         bundle.putString("ImageStringUri", imageStringUri);
         bundle.putString("ImageTitle", imageTitle);
         slideImageFragment.setArguments(bundle);

@@ -1,5 +1,9 @@
 apply plugin: 'com.android.application'
 
+repositories {
+    mavenCentral()
+}
+
 android {
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
@@ -35,4 +39,5 @@ dependencies {
         exclude group: 'com.google.android', module: 'support-v4'
     }
     compile project(':library')
+    compile 'com.github.ksoichiro:android-observablescrollview:1.5.1'
 }

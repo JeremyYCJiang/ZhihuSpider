@@ -1,0 +1,26 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="com.jiangziandroid.zhihuspider.ui.StoryActivity">
+
+      <item android:id="@+id/action_share"
+            android:icon="@drawable/ic_action_share"
+            android:title="share"
+            android:orderInCategory="100"
+            app:showAsAction="always"/>
+      <item android:id="@+id/action_collect"
+            android:icon="@drawable/ic_action_collect"
+            android:title="collect"
+            android:orderInCategory="200"
+            app:showAsAction="always"/>
+      <item android:id="@+id/action_comments"
+            android:icon="@drawable/ic_action_comments"
+            android:title="comments"
+            android:orderInCategory="300"
+            app:showAsAction="always"/>
+      <item android:id="@+id/action_zan"
+            android:icon="@drawable/ic_action_zan"
+            android:title="zan"
+            android:orderInCategory="400"
+            app:showAsAction="always"/>
+</menu>

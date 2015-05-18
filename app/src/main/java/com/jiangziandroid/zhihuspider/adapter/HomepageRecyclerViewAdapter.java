@@ -1,6 +1,7 @@
 package com.jiangziandroid.zhihuspider.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 
 import com.jiangziandroid.zhihuspider.R;
 import com.jiangziandroid.zhihuspider.model.LatestNews;
+import com.jiangziandroid.zhihuspider.ui.StoryActivity;
 import com.squareup.picasso.Picasso;
 import com.viewpagerindicator.CirclePageIndicator;
 
@@ -57,7 +59,7 @@ public class HomepageRecyclerViewAdapter extends
 
 
     //views(View)
-    public static class HomepageRecyclerViewViewHolder extends RecyclerView.ViewHolder {
+    public class HomepageRecyclerViewViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         int HolderId;
         public TextView mTimeTitleTextView;
         public ImageView mItemIconImageView;
@@ -68,6 +70,7 @@ public class HomepageRecyclerViewAdapter extends
         // previous and next wizard steps.
         public com.viewpagerindicator.CirclePageIndicator mCirclePageIndicator;
         public SlideImageAdapter mSlideImageAdapter;
+        public long mStoryId;
 
         public HomepageRecyclerViewViewHolder(View itemView, int viewType) {
             super(itemView);
@@ -80,10 +83,19 @@ public class HomepageRecyclerViewAdapter extends
                 mTimeTitleTextView= (TextView) itemView.findViewById(R.id.rowTimeTitleText);
                 HolderId = 1;
             }else {
+                itemView.setOnClickListener(this);
                 mItemIconImageView = (ImageView) itemView.findViewById(R.id.rowHomepageIcon);
                 mItemTextTextView = (TextView) itemView.findViewById(R.id.rowHomepageText);
                 HolderId = 2;
             }
+        }
+
+        @Override
+        public void onClick(View v) {
+            mStoryId = mLatestNews.getStories().get(getPosition()-2).getStoryId();
+            Intent intent = new Intent(v.getContext(), StoryActivity.class);
+            intent.putExtra("StoryId", mStoryId);
+            v.getContext().startActivity(intent);
         }
     }
 
@@ -102,7 +114,7 @@ public class HomepageRecyclerViewAdapter extends
         }else if(holder.HolderId == 1){
             holder.mTimeTitleTextView.setText(mLatestNews.getDate());
         }else {
-            holder.mItemTextTextView.setText(mLatestNews.getStories().get(position-2).getTitle());
+            holder.mItemTextTextView.setText(mLatestNews.getStories().get(position - 2).getTitle());
             Picasso.with(mContext)
                     .load(mLatestNews.getStories().get(position-2).getImageStringUri())
                     .into(holder.mItemIconImageView);
@@ -144,5 +156,6 @@ public class HomepageRecyclerViewAdapter extends
 //        mLatestNews.getStories().addAll(receivedStories);
 //        notifyDataSetChanged();
 //    }
+
 
 }
