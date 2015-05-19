@@ -28,5 +28,5 @@
         <item>以后再说</item>
     </string-array>
     <string name="title_activity_story">StoryActivity</string>
-    <string name="recommenders">test</string>
+    <string name="recommenders">推荐者</string>
 </resources>
