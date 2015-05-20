@@ -80,6 +80,7 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
             public void onFailure(Request request, IOException e) {
 
             }
+
             @Override
             public void onResponse(Response response) throws IOException {
                 String jsonData = response.body().string();
@@ -88,15 +89,16 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            //Set Header Image field
                             Picasso.with(StoryActivity.this).load(mNewsDetails.getImageStringUri()).into(mImageView);
                             mTitleTextView.setText(mNewsDetails.getTitle());
                             mImageSourceTextView.setText(mNewsDetails.getImageSource());
-                            if(mNewsDetails.getRecommenders() == null){
+                            //Set recommenders field
+                            if (mNewsDetails.getRecommenders() == null) {
                                 mRecommendersLL.setVisibility(View.GONE);
-                            }
-                            else {
+                            } else {
                                 int recommendersNumber = mNewsDetails.getRecommenders().size();
-                                for(int i = 0; i<recommendersNumber; i++){
+                                for (int i = 0; i < recommendersNumber; i++) {
                                     LayoutInflater inflater = (LayoutInflater) getApplicationContext()
                                             .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                     View v = inflater.inflate(R.layout.recommender_circle_image_view, null);
@@ -104,17 +106,25 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
                                             (CircleImageView) v.findViewById(R.id.recommenderCircleImageView);
                                     Picasso.with(StoryActivity.this)
                                             .load(mNewsDetails.getRecommenders().get(i).getAvatarStringUri())
-                                            .resize(64,64)
+                                            .resize(64, 64)
                                             .centerCrop()
                                             .into(mRecommenderCircleImageView);
                                     LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams
                                             (ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                                     layoutParams.setMargins(20, 10, 0, 10);
-                                    mRecommendersLL.addView(v, i+1, layoutParams);
+                                    mRecommendersLL.addView(v, i + 1, layoutParams);
                                 }
 
                             }
-                            mWebView.loadUrl("http://news-at.zhihu.com/api/4/news/" + mNewsDetails.getStoryId());
+                            //Set Main Content field (Using WebView)
+                            String noImagePlaceHolderBody = mNewsDetails.getBody()
+                                    .replace("<div class=\"img-place-holder\"></div>","");
+                            String customUrl = "<html>" +
+                                    "<head><link rel=\"stylesheet\" type=\"text/css\" " +
+                                    "href=" +   mNewsDetails.getCssStringUri()  + "></head>" +
+                                    "<body>"+   noImagePlaceHolderBody + "</body>" +
+                                    "</html>";
+                            mWebView.loadData(customUrl, "text/html;charset=utf-8", "utf-8");
                         }
                     });
                 } catch (JSONException e) {
@@ -132,6 +142,7 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
         newsDetails.setTitle(jsonNewsDetails.getString("title"));
         newsDetails.setImageSource(jsonNewsDetails.getString("image_source"));
         newsDetails.setBody(jsonNewsDetails.getString("body"));
+        newsDetails.setCssStringUri(jsonNewsDetails.getJSONArray("css").getString(0));
         if(jsonNewsDetails.has("recommenders")){
             JSONArray jsonArrayRecommenders = jsonNewsDetails.getJSONArray("recommenders");
             newsDetails.setRecommenders(getRecommenders(jsonArrayRecommenders));
@@ -163,12 +174,12 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                //Perform Back instead of Up
+                finish();
+                return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -194,10 +205,26 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
         }
     }
 
+
     //  We need to handle one more thing: restoring scroll state when the Activity is restored.
+    // Note : onSaveInstanceState() is not supposed to be called when the user presses BACK.
+//    @Override
+//    public void onSaveInstanceState(Bundle savedInstanceState) {
+//        // Save the user's current scroll position
+//        savedInstanceState.putInt("state_scroll_y", mObservableScrollView.getCurrentScrollY());
+//        // Always call the superclass so it can save the view hierarchy state
+//        super.onSaveInstanceState(savedInstanceState);
+//    }
+
+    //  Instead of restoring the state during onCreate() you may choose to implement onRestoreInstanceState(),
+    //  which the system calls after the onStart() method. The system calls onRestoreInstanceState() only if there
+    //  is a saved state to restore, so you do not need to check whether the Bundle is null:
+
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        // Always call the superclass so it can restore the view hierarchy
         super.onRestoreInstanceState(savedInstanceState);
+//        mObservableScrollView.setScrollY(savedInstanceState.getInt("state_scroll_y"));
         onScrollChanged(mObservableScrollView.getCurrentScrollY(), false, false);
     }
 

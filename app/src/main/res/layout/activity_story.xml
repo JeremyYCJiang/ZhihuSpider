@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -22,9 +23,16 @@
                 android:layout_height="@dimen/parallax_image_height"
                 android:layout_marginTop="@dimen/tool_bar_height"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_action_calendar"
                 android:contentDescription="parallax_image">
             </ImageView>
+            <!-- This is an image-mask above ImageView -->
+            <View
+                android:background="@drawable/image_mask_gradient"
+                android:id="@+id/image_mask"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/parallax_image_height"
+                android:layout_marginTop="@dimen/tool_bar_height">
+            </View>
             <TextView
                 android:id="@+id/titleText"
                 android:layout_width="match_parent"

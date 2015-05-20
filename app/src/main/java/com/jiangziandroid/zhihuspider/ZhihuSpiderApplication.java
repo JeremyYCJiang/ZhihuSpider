@@ -2,10 +2,13 @@ package com.jiangziandroid.zhihuspider;
 
 import android.app.Application;
 
+import com.facebook.stetho.Stetho;
+import com.facebook.stetho.okhttp.StethoInterceptor;
 import com.jiangziandroid.zhihuspider.utils.ParseConstants;
 import com.parse.Parse;
 import com.parse.ParseInstallation;
 import com.parse.ParseUser;
+import com.squareup.okhttp.OkHttpClient;
 
 /**
  * Created by JeremyYCJiang on 2015/5/8.
@@ -23,6 +26,17 @@ public class ZhihuSpiderApplication extends Application {
 //        ParseObject testObject = new ParseObject("TestObject");
 //        testObject.put("foo", "bar");
 //        testObject.saveInBackground();
+
+        //Stetho - A debug bridge for Android applications
+        Stetho.initialize(
+                Stetho.newInitializerBuilder(this)
+                        .enableDumpapp(
+                                Stetho.defaultDumperPluginsProvider(this))
+                        .enableWebKitInspector(
+                                Stetho.defaultInspectorModulesProvider(this))
+                        .build());
+        OkHttpClient client = new OkHttpClient();
+        client.networkInterceptors().add(new StethoInterceptor());
     }
 
     public static void updateParseInstallation(ParseUser user){

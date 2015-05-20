@@ -12,6 +12,15 @@ public class NewsDetails {
     private String mImageStringUri;
     private ArrayList<Recommender> mRecommenders;
     private String mBody;
+    private String mCssStringUri;
+
+    public String getCssStringUri() {
+        return mCssStringUri;
+    }
+
+    public void setCssStringUri(String cssStringUri) {
+        mCssStringUri = cssStringUri;
+    }
 
     public String getBody() {
         return mBody;

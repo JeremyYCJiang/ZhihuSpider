@@ -40,4 +40,7 @@ dependencies {
     }
     compile project(':library')
     compile 'com.github.ksoichiro:android-observablescrollview:1.5.1'
+    compile 'com.facebook.stetho:stetho:1.1.1'
+    compile 'com.facebook.stetho:stetho-okhttp:1.1.1'
+    compile 'com.facebook.stetho:stetho-urlconnection:1.1.1'
 }
