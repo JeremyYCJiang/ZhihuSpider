@@ -4,13 +4,12 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.github.ksoichiro.android.observablescrollview.ObservableScrollView;
@@ -18,6 +17,7 @@ import com.github.ksoichiro.android.observablescrollview.ObservableScrollViewCal
 import com.github.ksoichiro.android.observablescrollview.ScrollState;
 import com.jiangziandroid.zhihuspider.R;
 import com.jiangziandroid.zhihuspider.model.NewsDetails;
+import com.jiangziandroid.zhihuspider.model.NewsExtras;
 import com.jiangziandroid.zhihuspider.model.Recommender;
 import com.jiangziandroid.zhihuspider.utils.ZhihuAPI;
 import com.squareup.okhttp.Call;
@@ -40,7 +40,15 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class StoryActivity extends AppCompatActivity implements ObservableScrollViewCallbacks{
     @InjectView(R.id.scroll)  ObservableScrollView mObservableScrollView;
-    @InjectView(R.id.tool_bar)  android.support.v7.widget.Toolbar mToolbar;
+//    @InjectView(R.id.tool_bar)  android.support.v7.widget.Toolbar mToolbar;
+    @InjectView(R.id.AppBarRL) RelativeLayout mAppBarRL;
+    @InjectView(R.id.BackHomeImageView) ImageView mBackHomeImageView;
+    @InjectView(R.id.ShareImageView) ImageView mShareImageView;
+    @InjectView(R.id.CollectImageView) ImageView mCollectImageView;
+    @InjectView(R.id.CommentsImageView) ImageView mCommentsImageView;
+    @InjectView(R.id.CommentsTextView) TextView mCommentsTextView;
+    @InjectView(R.id.ZanImageView) ImageView mZanImageView;
+    @InjectView(R.id.ZanTextView) TextView mZanTextView;
     @InjectView(R.id.image) ImageView mImageView;
     @InjectView(R.id.titleText) TextView mTitleTextView;
     @InjectView(R.id.imageSourceText) TextView mImageSourceTextView;
@@ -49,6 +57,7 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
     protected long mStoryId;
     protected int mParallaxImageHeight;
     protected NewsDetails mNewsDetails;
+    protected NewsExtras mNewsExtras;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,17 +65,29 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
         setContentView(R.layout.activity_story);
         ButterKnife.inject(this);
         mObservableScrollView.setScrollViewCallbacks(this);
-        setSupportActionBar(mToolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+//        setSupportActionBar(mToolbar);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setDisplayShowTitleEnabled(false);
         // When we add index transparency, every color in the color table is given a transparency designation
         // in addition to its color data  (i.e., RGB values):
         //zero (o = False in Boolean algebra) means do not display this color, or
         //one (1 = True in Boolean Algebra) means display this color.
-        mToolbar.setAlpha(1);
+//        mAppBarRL.setAlpha(1);
+//        mToolbar.setAlpha(1);
+        setAppBarOnClickListener();
         mParallaxImageHeight = getResources().getDimensionPixelSize(R.dimen.parallax_image_height);
         mStoryId = getIntent().getLongExtra("StoryId", 404);
         getNews();
+        getNewsExtras();
+    }
+
+    private void setAppBarOnClickListener() {
+        mBackHomeImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
 
@@ -162,27 +183,74 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_story, menu);
-        return true;
+
+    private void getNewsExtras() {
+        String newsExtrasUrl = ZhihuAPI.API_NEWS_EXTRAS + mStoryId;
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(newsExtrasUrl).build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+
+            }
+            @Override
+            public void onResponse(Response response) throws IOException {
+                String jsonData = response.body().string();
+                try {
+                    mNewsExtras = getNewsExtrasDetails(jsonData);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mCommentsTextView.setText(String.valueOf(mNewsExtras.getComments()));
+                            mZanTextView.setText(String.valueOf(mNewsExtras.getPopularity()));
+//                            MenuView.ItemView mCommentsText = (MenuView.ItemView) findViewById(R.id.text_comments);
+//                            MenuView.ItemView mZanText = (MenuView.ItemView) findViewById(R.id.text_zan);
+//                            mCommentsText.setTitle(String.valueOf(mNewsExtras.getComments()));
+//                            mZanText.setTitle(String.valueOf(mNewsExtras.getPopularity()));
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                //Perform Back instead of Up
-                finish();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    private NewsExtras getNewsExtrasDetails(String jsonData) throws JSONException {
+        NewsExtras newsExtras = new NewsExtras();
+        JSONObject jsonExtras = new JSONObject(jsonData);
+        newsExtras.setComments(jsonExtras.getInt("comments"));
+        newsExtras.setLongComments(jsonExtras.getInt("long_comments"));
+        newsExtras.setShortComments(jsonExtras.getInt("short_comments"));
+        newsExtras.setPopularity(jsonExtras.getInt("popularity"));
+        return newsExtras;
     }
+
+
+//
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.menu_story, menu);
+//        getNewsExtras();
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle action bar item clicks here. The action bar will
+//        // automatically handle clicks on the Home/Up button, so long
+//        // as you specify a parent activity in AndroidManifest.xml.
+//        switch (item.getItemId()) {
+//            case android.R.id.home:
+//                //Perform Back instead of Up
+//                finish();
+//                return true;
+//        }
+//
+//        return super.onOptionsItemSelected(item);
+//    }
 
 
     @Override
@@ -194,14 +262,17 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
         //      (If scrollY equals to mParallaxImageHeight, Toolbar is transparent.)
         // NOTE: scrollY is an absolute value
         float alpha = Math.max(0, 1 - (float) scrollY / mParallaxImageHeight);
-        mToolbar.setAlpha(alpha);
+        mAppBarRL.setAlpha(alpha);
+//        mToolbar.setAlpha(alpha);
         mImageView.setTranslationY(scrollY / 2);
         mTitleTextView.setTranslationY(scrollY / 2);
         mImageSourceTextView.setTranslationY(scrollY / 2);
         if(scrollY >= mParallaxImageHeight){
-            getSupportActionBar().hide();
+            mAppBarRL.setVisibility(View.INVISIBLE);
+//            getSupportActionBar().hide();
         }else {
-            getSupportActionBar().show();
+            mAppBarRL.setVisibility(View.VISIBLE);
+//            getSupportActionBar().show();
         }
     }
 

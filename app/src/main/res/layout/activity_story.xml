@@ -96,13 +96,82 @@
 
     </com.github.ksoichiro.android.observablescrollview.ObservableScrollView>
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/tool_bar"
+    <!--<android.support.v7.widget.Toolbar-->
+        <!--android:id="@+id/tool_bar"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="@dimen/tool_bar_height"-->
+        <!--android:background="@color/ColorPrimary"-->
+        <!--android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">-->
+    <!--</android.support.v7.widget.Toolbar>-->
+
+    <!--Replace Toolbar with RelativeLayout as AppBar-->
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/tool_bar_height"
         android:background="@color/ColorPrimary"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-    </android.support.v7.widget.Toolbar>
+        android:gravity="center_vertical"
+        android:id="@+id/AppBarRL">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/BackHomeImageView"
+            android:src="@drawable/ic_action_back_home"
+            android:layout_marginLeft="15dp"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/ShareImageView"
+            android:src="@drawable/ic_action_share"
+            android:layout_toLeftOf="@+id/CollectImageView"
+            android:layout_marginRight="20dp"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/CollectImageView"
+            android:src="@drawable/ic_action_collect"
+            android:layout_toLeftOf="@+id/CommentsImageView"
+            android:layout_marginRight="20dp"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/CommentsImageView"
+            android:src="@drawable/ic_action_comments"
+            android:layout_toLeftOf="@+id/CommentsTextView"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="..."
+            android:id="@+id/CommentsTextView"
+            android:textColor="@android:color/white"
+            android:layout_toLeftOf="@+id/ZanImageView"
+            android:layout_alignBottom="@+id/CommentsImageView"
+            android:layout_marginRight="15dp"
+            android:layout_marginBottom="5dp"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/ZanImageView"
+            android:src="@drawable/ic_action_zan"
+            android:layout_toLeftOf="@+id/ZanTextView"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="..."
+            android:id="@+id/ZanTextView"
+            android:textColor="@android:color/white"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="15dp"
+            android:layout_alignBottom="@+id/ZanImageView"
+            android:layout_marginBottom="5dp"/>
+    </RelativeLayout>
+
 
 
 </FrameLayout>
