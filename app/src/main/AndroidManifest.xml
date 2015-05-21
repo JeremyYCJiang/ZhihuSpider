@@ -46,6 +46,7 @@
             android:name=".ui.UserInfoActivity"
             android:label="@string/title_activity_user_info"
             android:parentActivityName=".ui.MainActivity" >
+
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -58,6 +59,14 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.jiangziandroid.zhihuspider.ui.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ui.CommentsActivity"
+            android:label="@string/title_activity_comments"
+            android:parentActivityName=".ui.StoryActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.jiangziandroid.zhihuspider.ui.StoryActivity" />
         </activity>
     </application>
 

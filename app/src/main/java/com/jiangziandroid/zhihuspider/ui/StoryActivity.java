@@ -1,6 +1,7 @@
 package com.jiangziandroid.zhihuspider.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -74,11 +75,16 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
         //one (1 = True in Boolean Algebra) means display this color.
 //        mAppBarRL.setAlpha(1);
 //        mToolbar.setAlpha(1);
-        setAppBarOnClickListener();
         mParallaxImageHeight = getResources().getDimensionPixelSize(R.dimen.parallax_image_height);
         mStoryId = getIntent().getLongExtra("StoryId", 404);
         getNews();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         getNewsExtras();
+        setAppBarOnClickListener();
     }
 
     private void setAppBarOnClickListener() {
@@ -88,8 +94,25 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
                 finish();
             }
         });
+        mCommentsImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startCommentsActivity();
+            }
+        });
+        mCommentsTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startCommentsActivity();
+            }
+        });
     }
 
+    private void startCommentsActivity() {
+        Intent intent = new Intent(StoryActivity.this, CommentsActivity.class);
+        intent.putExtra("StoryId", mStoryId);
+        startActivity(intent);
+    }
 
     private void getNews() {
         String newsUrl = ZhihuAPI.API_NEWS_DETAILS + mStoryId;
