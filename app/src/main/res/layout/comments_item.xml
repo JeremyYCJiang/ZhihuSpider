@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+                android:paddingBottom="10dp">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/ic_action_carema"
+        android:id="@+id/authorImage"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Author Name"
+        android:id="@+id/authorName"
+        android:layout_alignTop="@+id/authorImage"
+        android:layout_toRightOf="@+id/authorImage"
+        android:layout_toEndOf="@+id/authorImage"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        android:layout_marginLeft="5dp"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/likeImage"
+        android:layout_alignTop="@+id/authorName"
+        android:src="@drawable/ic_action_zanguo"
+        android:layout_toLeftOf="@+id/likeText"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="99"
+        android:id="@+id/likeText"
+        android:textColor="@android:color/holo_red_dark"
+        android:layout_alignBottom="@+id/likeImage"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="This is comment."
+        android:id="@+id/commentText"
+        android:layout_below="@+id/authorName"
+        android:layout_alignLeft="@+id/authorName"
+        android:layout_alignStart="@+id/authorName"
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@+id/likeImage"
+        android:layout_toStartOf="@+id/likeImage"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="This is reply text."
+        android:id="@+id/replyText"
+        android:layout_below="@+id/commentText"
+        android:layout_alignLeft="@+id/commentText"
+        android:layout_alignStart="@+id/commentText"
+        android:layout_marginTop="5dp"
+        android:textSize="16sp"
+        android:layout_toLeftOf="@+id/likeText"
+        android:layout_toStartOf="@+id/likeText"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="This is time text."
+        android:id="@+id/timeText"
+        android:layout_below="@+id/replyText"
+        android:layout_alignLeft="@+id/replyText"
+        android:layout_alignStart="@+id/replyText"
+        android:layout_marginTop="10dp"
+        android:layout_alignRight="@+id/likeText"
+        android:layout_alignEnd="@+id/likeText"/>
+
+</RelativeLayout>

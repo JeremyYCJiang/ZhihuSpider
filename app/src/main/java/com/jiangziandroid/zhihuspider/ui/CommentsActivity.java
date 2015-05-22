@@ -91,11 +91,13 @@ public class CommentsActivity extends FragmentActivity {
                             mViewPager.setAdapter(mCommentsViewPagerAdapter);
                             // To make the Tabs Fixed set this true, This makes the tabs Space Evenly in Available width
                             mSlidingTabs.setDistributeEvenly(true);
+                            // Setting Custom TabView layout
+                            mSlidingTabs.setCustomTabView(R.layout.custom_tab_title, R.id.tabText);
                             // Setting Custom Color for the Scroll bar indicator of the Tab View
                             mSlidingTabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
                                 @Override
                                 public int getIndicatorColor(int position) {
-                                    return getResources().getColor(R.color.ColorPrimary);
+                                    return getResources().getColor(R.color.ColorPrimaryDark);
                                 }
                             });
                             // Setting the ViewPager For the SlidingTabsLayout

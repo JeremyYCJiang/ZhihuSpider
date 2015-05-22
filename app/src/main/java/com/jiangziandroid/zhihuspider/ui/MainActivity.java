@@ -243,9 +243,9 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
     }
 
     public void getLatestNews(){
-        final String latestNewsUri = ZhihuAPI.API_LATEST_NEWS;
+        String latestNewsUri = ZhihuAPI.API_LATEST_NEWS;
         OkHttpClient client = new OkHttpClient();
-        final Request request = new Request.Builder().url(latestNewsUri).build();
+        Request request = new Request.Builder().url(latestNewsUri).build();
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
             @Override

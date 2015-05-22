@@ -1,5 +1,8 @@
 package com.jiangziandroid.zhihuspider.model;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by JeremyYCJiang on 2015/5/21.
  */
@@ -54,6 +57,12 @@ public class Comments {
 
     public long getUnixTimestamp() {
         return mUnixTimestamp;
+    }
+
+    public String getStringTime(){
+        Date date = new Date(mUnixTimestamp*1000);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzzz");
+        return formatter.format(date);
     }
 
     public void setUnixTimestamp(long unixTimestamp) {

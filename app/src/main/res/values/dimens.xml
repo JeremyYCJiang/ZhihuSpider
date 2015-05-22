@@ -10,4 +10,5 @@
     <dimen name="content_item_horizontal_margin">8dp</dimen>
     <dimen name="content_item_vertical_margin">8dp</dimen>
     <dimen name="parallax_image_height">225dp</dimen>
+    <dimen name="fragment_vertical_margin">8dp</dimen>
 </resources>

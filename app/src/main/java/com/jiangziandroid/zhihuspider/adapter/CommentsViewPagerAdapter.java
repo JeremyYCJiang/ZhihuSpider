@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-import com.jiangziandroid.zhihuspider.R;
 import com.jiangziandroid.zhihuspider.ui.CommentsFragment;
 
 
@@ -47,17 +46,6 @@ public class CommentsViewPagerAdapter extends FragmentStatePagerAdapter{
     public CharSequence getPageTitle(int position) {
             return mViewPagerTabTitles[position];
         }
-
-
-    public int getIcon(int position){
-        switch (position){
-            case 0:
-                return R.drawable.ic_action_commentsed;
-            case 1:
-                return R.drawable.ic_action_comments;
-        }
-        return R.drawable.ic_action_message;
-    }
 
 
 }
