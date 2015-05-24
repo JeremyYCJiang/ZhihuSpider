@@ -25,6 +25,7 @@ import com.jiangziandroid.zhihuspider.model.Story;
 import com.jiangziandroid.zhihuspider.model.Theme;
 import com.jiangziandroid.zhihuspider.model.Themes;
 import com.jiangziandroid.zhihuspider.model.TopStory;
+import com.jiangziandroid.zhihuspider.model.TotalNews;
 import com.jiangziandroid.zhihuspider.utils.ParseConstants;
 import com.jiangziandroid.zhihuspider.utils.ZhihuAPI;
 import com.parse.ParseUser;
@@ -62,9 +63,14 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
     protected SlideDrawerAdapter mSlideDrawerAdapter;       // Declaring Adapter For Recycler View
     protected HomepageRecyclerViewAdapter mHomepageRecyclerViewAdapter;
     protected RecyclerView.LayoutManager mSlideDrawerLayoutManager;    // Declaring Layout Manager as a linear layout manager
-    protected RecyclerView.LayoutManager mHomepageLayoutManager;
+    protected LinearLayoutManager mHomepageLayoutManager;
     protected ActionBarDrawerToggle mDrawerToggle;          // Declaring Action Bar Drawer Toggle
     protected FragmentManager mFragmentManager;
+
+    protected TotalNews mTotalNews;
+    protected ArrayList<LatestNews> mNewsArrayList;
+    protected LatestNews mYesterdayNews;
+    private long mLongDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +117,19 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
         getLatestNews();
         //update slide drawer themes
         getZhihuThemes();
+
+        mHomepageRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    if(mHomepageLayoutManager.findLastCompletelyVisibleItemPosition() ==
+                            mHomepageLayoutManager.getItemCount()-1){
+                        Toast.makeText(MainActivity.this, "Last Item Wow !", Toast.LENGTH_LONG).show();
+                        getHistoryNews();
+                    }
+                }
+        });
     }
+
 
 
     @Override
@@ -206,8 +224,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                                 //initial the adapter
                                 mSlideDrawerRecyclerView.setAdapter(mSlideDrawerAdapter);
                                 mSlideDrawerRecyclerView.setHasFixedSize(true);
-                            }
-                            else {
+                            } else {
                                 //refill the adapter
                                 ((SlideDrawerAdapter) (mSlideDrawerRecyclerView.getAdapter())).refill(mThemes.getThemes());
                             }
@@ -242,6 +259,40 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
         });
     }
 
+
+    public void getHistoryNews(){
+        String oneDayNewsUri = "http://news.at.zhihu.com/api/4/news/before/" + mLongDate;
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(oneDayNewsUri).build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+
+            }
+            @Override
+            public void onResponse(Response response) throws IOException {
+                String jsonData = response.body().string();
+                Log.e(getApplication().getPackageName(), "Get history data successfully! ^.^");
+                try {
+                    mYesterdayNews = getNewsDetails(jsonData);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mNewsArrayList.add(mYesterdayNews);
+                            mTotalNews.setTotalNewsArrayList(mNewsArrayList);
+                            ((HomepageRecyclerViewAdapter) (mHomepageRecyclerView.getAdapter())).
+                                    add(mTotalNews);
+                            mLongDate = mLongDate-1;
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
     public void getLatestNews(){
         String latestNewsUri = ZhihuAPI.API_LATEST_NEWS;
         OkHttpClient client = new OkHttpClient();
@@ -259,21 +310,26 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                 String jsonData = response.body().string();
                 try {
                     mLatestNews = getNewsDetails(jsonData);
+                    mLongDate = Long.parseLong(mLatestNews.getDate());
+                    mTotalNews = new TotalNews();
+                    mNewsArrayList = new ArrayList<>();
+                    mNewsArrayList.add(mLatestNews);
+                    mTotalNews.setTotalNewsArrayList(mNewsArrayList);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if(mSwipeRefreshLayout.isRefreshing()){
+                            if (mSwipeRefreshLayout.isRefreshing()) {
                                 mSwipeRefreshLayout.setRefreshing(false);
                                 Log.e(getApplication().getPackageName(), "Get data successfully! ^.^");
                             }
                             mFragmentManager = getSupportFragmentManager();
                             mHomepageRecyclerViewAdapter = new HomepageRecyclerViewAdapter(MainActivity.this,
-                                    mLatestNews, mFragmentManager);
-                            if (mHomepageRecyclerView.getAdapter() == null) {
-                                //initial the adapter
-                                mHomepageRecyclerView.setAdapter(mHomepageRecyclerViewAdapter);
-                                mHomepageRecyclerView.setHasFixedSize(true);
-                            }
+                                    mTotalNews, mFragmentManager);
+//                            if (mHomepageRecyclerView.getAdapter() == null) {
+                            //initial the adapter
+                            mHomepageRecyclerView.setAdapter(mHomepageRecyclerViewAdapter);
+                            mHomepageRecyclerView.setHasFixedSize(true);
+//                            }
 //                            else {
 //                                //refill the adapter
 //                                ((HomepageRecyclerViewAdapter) (mHomepageRecyclerView.getAdapter())).
@@ -286,55 +342,60 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                 }
             }
 
-            private LatestNews getNewsDetails(String jsonData) throws JSONException {
-                LatestNews latestNews = new LatestNews();
-                latestNews.setDate(getDate(jsonData));
-                latestNews.setTopStories(getTopStoriesDetails(jsonData));
-                latestNews.setStories(getStoriesDetails(jsonData));
-                return latestNews;
-            }
-
-            private String getDate(String jsonData) throws JSONException {
-                JSONObject latestNews = new JSONObject(jsonData);
-                return latestNews.getString("date");
-             }
-
-            private ArrayList<TopStory> getTopStoriesDetails(String jsonData) throws JSONException {
-                JSONObject latestNews = new JSONObject(jsonData);
-                JSONArray top_stories = latestNews.getJSONArray("top_stories");
-                ArrayList<TopStory> topStoriesArray = new ArrayList<>();
-                for (int i =0 ; i<top_stories.length(); i++){
-                    JSONObject jsonTopStory = top_stories.getJSONObject(i);
-                    TopStory topStory = new TopStory();
-                    topStory.setStoryId(jsonTopStory.getLong("id"));
-                    topStory.setImageStringUri(jsonTopStory.getString("image"));
-                    topStory.setTitle(jsonTopStory.getString("title"));
-                    topStoriesArray.add(topStory);
-                }
-                return topStoriesArray;
-            }
-
-            private ArrayList<Story> getStoriesDetails(String jsonData) throws JSONException {
-                JSONObject latestNews = new JSONObject(jsonData);
-                JSONArray stories = latestNews.getJSONArray("stories");
-                ArrayList<Story> storiesArray = new ArrayList<>();
-                for (int i =0 ; i<stories.length(); i++){
-                    JSONObject jsonStory = stories.getJSONObject(i);
-                    Story story = new Story();
-                    story.setStoryId(jsonStory.getLong("id"));
-                    story.setTitle(jsonStory.getString("title"));
-                    story.setImageStringUri(jsonStory.getJSONArray("images").getString(0));
-                    if(jsonStory.isNull("multipic")){
-                        story.setMultipic(false);
-                    }else {
-                        story.setMultipic(true);
-                    }
-                    storiesArray.add(story);
-                }
-                return storiesArray;
-            }
 
         });
+    }
+
+
+    private LatestNews getNewsDetails(String jsonData) throws JSONException {
+        LatestNews latestNews = new LatestNews();
+        latestNews.setDate(getDate(jsonData));
+        latestNews.setTopStories(getTopStoriesDetails(jsonData));
+        latestNews.setStories(getStoriesDetails(jsonData));
+        return latestNews;
+    }
+
+    private String getDate(String jsonData) throws JSONException {
+        JSONObject latestNews = new JSONObject(jsonData);
+        return latestNews.getString("date");
+    }
+
+    private ArrayList<TopStory> getTopStoriesDetails(String jsonData) throws JSONException {
+        JSONObject latestNews = new JSONObject(jsonData);
+        if(latestNews.has("top_stories")){
+            JSONArray top_stories = latestNews.getJSONArray("top_stories");
+            ArrayList<TopStory> topStoriesArray = new ArrayList<>();
+            for (int i =0 ; i<top_stories.length(); i++){
+                JSONObject jsonTopStory = top_stories.getJSONObject(i);
+                TopStory topStory = new TopStory();
+                topStory.setStoryId(jsonTopStory.getLong("id"));
+                topStory.setImageStringUri(jsonTopStory.getString("image"));
+                topStory.setTitle(jsonTopStory.getString("title"));
+                topStoriesArray.add(topStory);
+            }
+            return topStoriesArray;
+        }
+        else return null;
+    }
+
+    private ArrayList<Story> getStoriesDetails(String jsonData) throws JSONException {
+        JSONObject latestNews = new JSONObject(jsonData);
+        JSONArray stories = latestNews.getJSONArray("stories");
+        ArrayList<Story> storiesArray = new ArrayList<>();
+        for (int i =0 ; i<stories.length(); i++){
+            JSONObject jsonStory = stories.getJSONObject(i);
+            Story story = new Story();
+            story.setStoryId(jsonStory.getLong("id"));
+            story.setTitle(jsonStory.getString("title"));
+            story.setImageStringUri(jsonStory.getJSONArray("images").getString(0));
+            if(jsonStory.isNull("multipic")){
+                story.setMultipic(false);
+            }else {
+                story.setMultipic(true);
+            }
+            storiesArray.add(story);
+        }
+        return storiesArray;
     }
 
 
