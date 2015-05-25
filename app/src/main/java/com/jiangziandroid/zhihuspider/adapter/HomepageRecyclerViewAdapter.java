@@ -16,6 +16,9 @@ import com.jiangziandroid.zhihuspider.ui.StoryActivity;
 import com.squareup.picasso.Picasso;
 import com.viewpagerindicator.CirclePageIndicator;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 /**
  * Created by JeremyYCJiang on 2015/5/11.
  */
@@ -33,13 +36,15 @@ public class HomepageRecyclerViewAdapter extends
     private Context mContext;
     private FragmentManager mFragmentManager;
     private int mTotalNewSize;
+    private HashMap<Integer, Integer> mDateMap = new HashMap<>();
+    private HashMap<Integer, Integer> mTimeMap = new HashMap<>();
+    private HashMap<Integer, Integer> mItemMap = new HashMap<>();
 
     public HomepageRecyclerViewAdapter(Context context, TotalNews totalNews, FragmentManager fragmentManager){
 
         mTotalNews = totalNews;
         mContext = context;
         mFragmentManager = fragmentManager;
-        mTotalNewSize = mTotalNews.getTotalNewsArrayList().size();
     }
 
     @Override
@@ -94,7 +99,12 @@ public class HomepageRecyclerViewAdapter extends
 
         @Override
         public void onClick(View v) {
-            mStoryId = mTotalNews.getTotalNewsArrayList().get(0).getStories().get(getPosition()-2).getStoryId();
+            if(getPosition()>1 && getPosition()<mTotalNews.getTotalNewsArrayList().get(0).getStories().size()+2)
+                mStoryId = mTotalNews.getTotalNewsArrayList().get(0).getStories().get(getPosition()-2).getStoryId();
+            else {
+                mStoryId = mTotalNews.getTotalNewsArrayList().get(mDateMap.get(mTimeMap.get(getPosition())))
+                        .getStories().get(mItemMap.get(getPosition())).getStoryId();
+            }
             Intent intent = new Intent(v.getContext(), StoryActivity.class);
             intent.putExtra("StoryId", mStoryId);
             v.getContext().startActivity(intent);
@@ -113,21 +123,32 @@ public class HomepageRecyclerViewAdapter extends
             holder.mCirclePageIndicator.setViewPager(holder.mAutoScrollViewPager);
             holder.mAutoScrollViewPager.setInterval(5000);
             holder.mAutoScrollViewPager.startAutoScroll();
-        }else if(holder.HolderId == 1){
-            holder.mTimeTitleTextView.setText(mTotalNews.getTotalNewsArrayList().get(mTotalNewSize-1).getDate());
-//            int datePosition = position;
-//            if(position == 1){
-//                holder.mTimeTitleTextView.setText(mTotalNews.getTotalNewsArrayList().get(position-1).getDate());
-//            }
-//            if(position > 1){
-//                for(int i = 1; i<totalNewsSize; i++){
-//                    datePosition -= mTotalNews.getTotalNewsArrayList().get(i-1).getStories().size();
-//                }
-//                datePosition = datePosition-1;
-//                holder.mTimeTitleTextView.setText(mTotalNews.getTotalNewsArrayList().get(datePosition).getDate());
-//            }
-        }else {
-            if(position<mTotalNews.getTotalNewsArrayList().get(0).getStories().size()+2){
+        }
+        else if(holder.HolderId == 1){
+            int dateIndex = position;
+            if(position == 1){
+                holder.mTimeTitleTextView.setText(mTotalNews.getTotalNewsArrayList().get(position-1).getDate());
+            }
+            if(position > 1){
+                if(mDateMap.containsKey(position)){
+                    holder.mTimeTitleTextView.setText(mTotalNews.getTotalNewsArrayList()
+                            .get(mDateMap.get(position)).getDate());
+                }
+                else {
+                    for(int i = 1; i<mTotalNewSize; i++){
+                        dateIndex -= mTotalNews.getTotalNewsArrayList().get(i-1).getStories().size();
+                    }
+                    dateIndex = dateIndex-1;
+                    //use mDateMap to store datePosition-dateIndex key-value pairs
+                    mDateMap.put(position, dateIndex);
+                    holder.mTimeTitleTextView.setText(mTotalNews.getTotalNewsArrayList()
+                            .get(mDateMap.get(position)).getDate());
+                }
+            }
+        }
+        else {
+            int itemIndex = position;
+            if(position>1 && position<mTotalNews.getTotalNewsArrayList().get(0).getStories().size()+2){
                 holder.mItemTextTextView.setText(mTotalNews.getTotalNewsArrayList().get(0).getStories()
                         .get(position - 2).getTitle());
                 Picasso.with(mContext)
@@ -136,20 +157,42 @@ public class HomepageRecyclerViewAdapter extends
                         .into(holder.mItemIconImageView);
             }
             else {
-                int itemPosition = position;
-                for(int i = 1; i<mTotalNewSize; i++){
-                        itemPosition -= mTotalNews.getTotalNewsArrayList().get(i-1).getStories().size();
+                if(mTimeMap.containsKey(position) && mItemMap.containsKey(position)) {
+                    holder.mItemTextTextView.setText(mTotalNews.getTotalNewsArrayList()
+                            .get(mDateMap.get(mTimeMap.get(position)))
+                            .getStories().get(mItemMap.get(position)).getTitle());
+
+                    Picasso.with(mContext)
+                            .load(mTotalNews.getTotalNewsArrayList()
+                                    .get(mDateMap.get(mTimeMap.get(position))).getStories()
+                                    .get(mItemMap.get(position)).getImageStringUri())
+                            .into(holder.mItemIconImageView);
                 }
-                itemPosition -= mTotalNewSize;
-                itemPosition = itemPosition-1;
+                else {
+                    int timePosition = 1;
+                    for(int i = 1; i<mTotalNewSize; i++){
+                        timePosition += mTotalNews.getTotalNewsArrayList().get(i-1).getStories().size()+1;
+                    }
+                    //use mTimeMap to store position-datePosition key-value pairs
+                    mTimeMap.put(position, timePosition);
 
-                holder.mItemTextTextView.setText(mTotalNews.getTotalNewsArrayList().get(mTotalNewSize-1)
-                        .getStories().get(itemPosition).getTitle());
+                    for(int j = 1; j<mTotalNewSize; j++){
+                            itemIndex -= mTotalNews.getTotalNewsArrayList().get(j-1).getStories().size();
+                        }
+                    itemIndex = itemIndex-mTotalNewSize-1;
+                    //use mItemMap to store position-itemIndex key-value pairs
+                    mItemMap.put(position, itemIndex);
 
-                Picasso.with(mContext)
-                        .load(mTotalNews.getTotalNewsArrayList().get(mTotalNewSize-1).getStories().
-                                get(itemPosition).getImageStringUri())
-                        .into(holder.mItemIconImageView);
+                    holder.mItemTextTextView.setText(mTotalNews.getTotalNewsArrayList()
+                            .get(mDateMap.get(mTimeMap.get(position)))
+                            .getStories().get(mItemMap.get(position)).getTitle());
+
+                    Picasso.with(mContext)
+                            .load(mTotalNews.getTotalNewsArrayList()
+                                    .get(mDateMap.get(mTimeMap.get(position))).getStories()
+                                    .get(mItemMap.get(position)).getImageStringUri())
+                            .into(holder.mItemIconImageView);
+                }
             }
         }
     }
@@ -157,8 +200,9 @@ public class HomepageRecyclerViewAdapter extends
 
     //  use position to check which ViewType should ViewHolder create
     //  position = 0 ,          ViewType = TYPE_VIEWPAGER;      HolderId = 0
-    //  position = 1 ,          ViewType = TYPE_TIMETITLE;        HolderId = 1
-    //  position = 2,3,4...     ViewType = TYPE_CONTENT;        HolderId = 2
+    //  position = 1 ,          ViewType = TYPE_TIMETITLE;      HolderId = 1
+    //  position = 2 ,          ViewType = TYPE_CONTENT;        HolderId = 2
+    //  and so on ...
     //  use HolderId as condition to bind corresponding data
     @Override
     public int getItemViewType(int position) {
@@ -176,16 +220,15 @@ public class HomepageRecyclerViewAdapter extends
     }
     private boolean isPositionTimeTitle(int position) {
         int timePosition = 1;
-        if(mTotalNewSize == 1){
-            timePosition = 1;
-        }
-        else {
+        ArrayList<Integer> timePositionArrayList = new ArrayList<>();
+        timePositionArrayList.add(timePosition);
+        if(mTotalNewSize > 1){
             for(int i = 1; i<mTotalNewSize; i++){
-
                 timePosition += mTotalNews.getTotalNewsArrayList().get(i-1).getStories().size()+1;
+                timePositionArrayList.add(timePosition);
             }
         }
-        return timePosition == position;
+        return timePositionArrayList.contains(position);
     }
 
     @Override
