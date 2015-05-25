@@ -36,4 +36,6 @@
     <string name="hello_long_comments_fragment">Hello long comments fragment</string>
     <string name="hello_short_comments_fragment">Hello short comments fragment</string>
     <string name="no_comments_place_holder_text">快来评论哦~</string>
+    <string name="title_activity_calendar">CalendarActivity</string>
+    <string name="title_activity_grid_stories">GridStoriesActivity</string>
 </resources>

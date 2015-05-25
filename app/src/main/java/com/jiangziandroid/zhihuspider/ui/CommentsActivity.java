@@ -28,7 +28,7 @@ import butterknife.InjectView;
 
 public class CommentsActivity extends FragmentActivity {
     @InjectView(R.id.BackImageView) ImageView mBackImageView;
-    @InjectView(R.id.TotalCommentsTextView) TextView mTotalCommentsTextView;
+    @InjectView(R.id.dateTextView) TextView mTotalCommentsTextView;
     @InjectView(R.id.ViewPager) ViewPager mViewPager;
     @InjectView(R.id.SlidingTabs) SlidingTabLayout mSlidingTabs;
     protected CommentsViewPagerAdapter mCommentsViewPagerAdapter;

@@ -7,7 +7,7 @@
           android:orderInCategory="100"
           app:showAsAction="never"/>
       <item
-          android:id="@+id/action_search"
+          android:id="@+id/action_calendar"
           android:orderInCategory="200"
           android:title="Calendar"
           android:icon="@drawable/ic_action_calendar"

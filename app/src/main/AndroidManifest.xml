@@ -68,6 +68,22 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.jiangziandroid.zhihuspider.ui.StoryActivity" />
         </activity>
+        <activity
+            android:name=".ui.CalendarActivity"
+            android:label="@string/title_activity_calendar"
+            android:parentActivityName=".ui.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.jiangziandroid.zhihuspider.ui.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ui.GridStoriesActivity"
+            android:label="@string/title_activity_grid_stories"
+            android:parentActivityName=".ui.CalendarActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.jiangziandroid.zhihuspider.ui.CalendarActivity" />
+        </activity>
     </application>
 
 </manifest>

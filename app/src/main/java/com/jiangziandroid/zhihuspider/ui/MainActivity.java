@@ -192,6 +192,9 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                     });
                     Toast.makeText(MainActivity.this, "Logout successfully!", Toast.LENGTH_SHORT).show();
                 }
+            case R.id.action_calendar:
+                Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
+                startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -261,7 +264,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
 
 
     public void getHistoryNews(){
-        String oneDayNewsUri = "http://news.at.zhihu.com/api/4/news/before/" + mLongDate;
+        String oneDayNewsUri = ZhihuAPI.API_HISTORY_NEWS + mLongDate;
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(oneDayNewsUri).build();
         Call call = client.newCall(request);
