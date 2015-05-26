@@ -15,6 +15,7 @@ import com.jiangziandroid.zhihuspider.utils.ZhihuAPI;
 import com.squareup.timessquare.CalendarPickerView;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -72,9 +73,14 @@ public class CalendarActivity extends Activity {
                 else {
                     Toast.makeText(CalendarActivity.this, "It's not today! "+ stringSelectedDateUrl, Toast.LENGTH_LONG).show();
                     //Get history news!
-                    long longDate = Long.parseLong(stringSelectedDateUrl)+1;
+                    //Increase 1 day to selected day
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(mCalendarPickerView.getSelectedDate());
+                    calendar.add(Calendar.DATE, 1);
+                    Date increasedDate = calendar.getTime();
+                    String stringIncreasedDateUrl = formatter.format(increasedDate);
                     Intent intent = new Intent(CalendarActivity.this, GridStoriesActivity.class);
-                    intent.putExtra("NewsAPI", ZhihuAPI.API_HISTORY_NEWS + longDate);
+                    intent.putExtra("NewsAPI", ZhihuAPI.API_HISTORY_NEWS + stringIncreasedDateUrl);
                     startActivity(intent);
                 }
             }

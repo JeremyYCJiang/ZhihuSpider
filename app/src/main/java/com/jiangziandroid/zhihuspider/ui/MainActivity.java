@@ -123,7 +123,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                     if(mHomepageLayoutManager.findLastCompletelyVisibleItemPosition() ==
                             mHomepageLayoutManager.getItemCount()-1){
-                        Toast.makeText(MainActivity.this, "Last Item Wow !", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Show last day's story!", Toast.LENGTH_LONG).show();
                         getHistoryNews();
                     }
                 }
@@ -279,6 +279,8 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                 Log.e(getApplication().getPackageName(), "Get history data successfully! ^.^");
                 try {
                     mYesterdayNews = getNewsDetails(jsonData);
+                    mLongDate = Long.parseLong(mYesterdayNews.getDate());
+                    //instead of mLongDate = mLongDate-1;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -286,7 +288,6 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                             mTotalNews.setTotalNewsArrayList(mNewsArrayList);
                             ((HomepageRecyclerViewAdapter) (mHomepageRecyclerView.getAdapter())).
                                     add(mTotalNews);
-                            mLongDate = mLongDate-1;
                         }
                     });
                 } catch (JSONException e) {

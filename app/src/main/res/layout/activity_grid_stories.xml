@@ -22,26 +22,71 @@
             android:layout_alignParentStart="true"
             android:layout_marginLeft="5dp"/>
 
+        <Button
+            android:layout_width="64dp"
+            android:layout_height="32dp"
+            android:text="@string/last_day_button_label"
+            android:id="@+id/LastDayButton"
+            android:textColor="@color/text_color"
+            android:background="@drawable/button_custom"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/dateTextView"
+            android:layout_toStartOf="@+id/dateTextView"
+            android:layout_marginRight="10dp"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="This is date field~"
+            android:text="Date field"
             android:id="@+id/dateTextView"
             android:textColor="@android:color/white"
             android:textSize="20sp"
-            android:layout_alignTop="@+id/BackImageView"
-            android:layout_toRightOf="@+id/BackImageView"
-            android:layout_toEndOf="@+id/BackImageView"
+            android:layout_centerInParent="true"/>
+
+        <Button
+            android:layout_width="64dp"
+            android:layout_height="32dp"
+            android:text="@string/next_day_button_label"
+            android:id="@+id/NextDayButton"
+            android:textColor="@color/text_color"
+            android:background="@drawable/button_custom"
+            android:layout_toRightOf="@+id/dateTextView"
+            android:layout_toEndOf="@+id/dateTextView"
+            android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"/>
-
-
 
     </RelativeLayout>
 
-    <TextView
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="testAPI"
-        android:id="@+id/textView"/>
+        android:layout_height="match_parent"
+        android:background="@color/light_purple_background">
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/GridStoriesRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/light_purple_background"
+                android:scrollbars="vertical"
+                android:paddingBottom="@dimen/content_item_vertical_margin"
+                android:clipToPadding="false">
+            </android.support.v7.widget.RecyclerView>
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+        <TextView
+            android:id="@+id/placeHolderTextView"
+            android:background="@android:color/white"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/no_stories_place_holder_text"
+            android:textColor="@color/ColorPrimary"
+            android:gravity="center_vertical|center_horizontal"
+            android:visibility="invisible"/>
+
+    </RelativeLayout>
 
 </LinearLayout>

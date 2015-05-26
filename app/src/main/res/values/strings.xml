@@ -36,6 +36,9 @@
     <string name="hello_long_comments_fragment">Hello long comments fragment</string>
     <string name="hello_short_comments_fragment">Hello short comments fragment</string>
     <string name="no_comments_place_holder_text">快来评论哦~</string>
+    <string name="no_stories_place_holder_text">今天还没有故事哦，稍后刷新试试~</string>
     <string name="title_activity_calendar">CalendarActivity</string>
     <string name="title_activity_grid_stories">GridStoriesActivity</string>
+    <string name="last_day_button_label">上一天</string>
+    <string name="next_day_button_label">下一天</string>
 </resources>
