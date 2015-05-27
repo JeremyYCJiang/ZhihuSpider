@@ -41,4 +41,5 @@
     <string name="title_activity_grid_stories">GridStoriesActivity</string>
     <string name="last_day_button_label">上一天</string>
     <string name="next_day_button_label">下一天</string>
+    <string name="multipic_label">多图预警</string>
 </resources>

@@ -392,10 +392,10 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             story.setStoryId(jsonStory.getLong("id"));
             story.setTitle(jsonStory.getString("title"));
             story.setImageStringUri(jsonStory.getJSONArray("images").getString(0));
-            if(jsonStory.isNull("multipic")){
-                story.setMultipic(false);
-            }else {
+            if(jsonStory.has("multipic")){
                 story.setMultipic(true);
+            }else {
+                story.setMultipic(false);
             }
             storiesArray.add(story);
         }

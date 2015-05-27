@@ -32,10 +32,42 @@
                 android:id="@+id/rowHomepageIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_action_search"
+                android:src="@drawable/ic_action_zanguo"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:padding="4dp"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="15dp"
+                android:background="@android:color/black"
+                android:orientation="horizontal"
+                android:layout_alignRight="@+id/rowHomepageIcon"
+                android:layout_alignBottom="@+id/rowHomepageIcon"
+                android:alpha="0.6"
+                android:layout_alignLeft="@+id/rowHomepageIcon"
+                android:id="@+id/multipicLL"
+                android:visibility="invisible"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_marginBottom="4dp">
+
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_action_picture_orange"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/multipic_label"
+                    android:textSize="10sp"
+                    android:textColor="@android:color/white"
+                    android:layout_weight="2"
+                    android:gravity="center"/>
+
+            </LinearLayout>
     </RelativeLayout>
 
 </LinearLayout>

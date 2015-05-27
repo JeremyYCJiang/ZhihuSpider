@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.jiangziandroid.zhihuspider.R;
@@ -71,6 +72,7 @@ public class HomepageRecyclerViewAdapter extends
         public TextView mTimeTitleTextView;
         public ImageView mItemIconImageView;
         public TextView mItemTextTextView;
+        public LinearLayout mMultipicLL;
         // The pager adapter, which provides the pages to the view pager widget.
         public cn.trinea.android.view.autoscrollviewpager.AutoScrollViewPager mAutoScrollViewPager;
         // The pager widget, which handles animation and allows swiping horizontally to access,
@@ -93,6 +95,7 @@ public class HomepageRecyclerViewAdapter extends
                 itemView.setOnClickListener(this);
                 mItemIconImageView = (ImageView) itemView.findViewById(R.id.rowHomepageIcon);
                 mItemTextTextView = (TextView) itemView.findViewById(R.id.rowHomepageText);
+                mMultipicLL = (LinearLayout) itemView.findViewById(R.id.multipicLL);
                 HolderId = 2;
             }
         }
@@ -151,10 +154,20 @@ public class HomepageRecyclerViewAdapter extends
             if(position>1 && position<mTotalNews.getTotalNewsArrayList().get(0).getStories().size()+2){
                 holder.mItemTextTextView.setText(mTotalNews.getTotalNewsArrayList().get(0).getStories()
                         .get(position - 2).getTitle());
+
                 Picasso.with(mContext)
                         .load(mTotalNews.getTotalNewsArrayList().get(0).getStories().get(position-2)
                                 .getImageStringUri())
                         .into(holder.mItemIconImageView);
+
+                if(mTotalNews.getTotalNewsArrayList().get(0).getStories().get(position-2).isMultipic()){
+                    holder.mMultipicLL.setVisibility(View.VISIBLE);
+                }else if(mTotalNews.getTotalNewsArrayList().get(0).getStories().get(position-2)
+                        .getTitle().contains("多图")){
+                    holder.mMultipicLL.setVisibility(View.VISIBLE);
+                }else {
+                    holder.mMultipicLL.setVisibility(View.INVISIBLE);
+                }
             }
             else {
                 if(mTimeMap.containsKey(position) && mItemMap.containsKey(position)) {
@@ -167,6 +180,16 @@ public class HomepageRecyclerViewAdapter extends
                                     .get(mDateMap.get(mTimeMap.get(position))).getStories()
                                     .get(mItemMap.get(position)).getImageStringUri())
                             .into(holder.mItemIconImageView);
+
+                    if(mTotalNews.getTotalNewsArrayList().get(mDateMap.get(mTimeMap.get(position))).getStories()
+                            .get(mItemMap.get(position)).isMultipic()){
+                        holder.mMultipicLL.setVisibility(View.VISIBLE);
+                    }else if(mTotalNews.getTotalNewsArrayList().get(mDateMap.get(mTimeMap.get(position))).getStories()
+                            .get(mItemMap.get(position)).getTitle().contains("多图")){
+                        holder.mMultipicLL.setVisibility(View.VISIBLE);
+                    }else {
+                        holder.mMultipicLL.setVisibility(View.INVISIBLE);
+                    }
                 }
                 else {
                     int timePosition = 1;
@@ -192,6 +215,16 @@ public class HomepageRecyclerViewAdapter extends
                                     .get(mDateMap.get(mTimeMap.get(position))).getStories()
                                     .get(mItemMap.get(position)).getImageStringUri())
                             .into(holder.mItemIconImageView);
+
+                    if(mTotalNews.getTotalNewsArrayList().get(mDateMap.get(mTimeMap.get(position))).getStories()
+                            .get(mItemMap.get(position)).isMultipic()){
+                        holder.mMultipicLL.setVisibility(View.VISIBLE);
+                    }else if(mTotalNews.getTotalNewsArrayList().get(mDateMap.get(mTimeMap.get(position))).getStories()
+                            .get(mItemMap.get(position)).getTitle().contains("多图")){
+                        holder.mMultipicLL.setVisibility(View.VISIBLE);
+                    }else {
+                        holder.mMultipicLL.setVisibility(View.INVISIBLE);
+                    }
                 }
             }
         }
