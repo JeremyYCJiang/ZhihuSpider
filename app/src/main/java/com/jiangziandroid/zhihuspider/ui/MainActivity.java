@@ -19,14 +19,19 @@ import android.widget.Toast;
 
 import com.jiangziandroid.zhihuspider.R;
 import com.jiangziandroid.zhihuspider.adapter.HomepageRecyclerViewAdapter;
+import com.jiangziandroid.zhihuspider.adapter.HomepageThemesRecyclerViewAdapter;
 import com.jiangziandroid.zhihuspider.adapter.SlideDrawerAdapter;
 import com.jiangziandroid.zhihuspider.model.LatestNews;
 import com.jiangziandroid.zhihuspider.model.Story;
 import com.jiangziandroid.zhihuspider.model.Theme;
+import com.jiangziandroid.zhihuspider.model.ThemeContent;
+import com.jiangziandroid.zhihuspider.model.ThemeContentEditor;
+import com.jiangziandroid.zhihuspider.model.ThemeContentStory;
 import com.jiangziandroid.zhihuspider.model.Themes;
 import com.jiangziandroid.zhihuspider.model.TopStory;
 import com.jiangziandroid.zhihuspider.model.TotalNews;
 import com.jiangziandroid.zhihuspider.utils.ParseConstants;
+import com.jiangziandroid.zhihuspider.utils.RecyclerItemClickListener;
 import com.jiangziandroid.zhihuspider.utils.ZhihuAPI;
 import com.parse.ParseUser;
 import com.squareup.okhttp.Call;
@@ -62,15 +67,19 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
     protected LatestNews mLatestNews;
     protected SlideDrawerAdapter mSlideDrawerAdapter;       // Declaring Adapter For Recycler View
     protected HomepageRecyclerViewAdapter mHomepageRecyclerViewAdapter;
+    protected HomepageThemesRecyclerViewAdapter mHomepageThemesRecyclerViewAdapter;
     protected RecyclerView.LayoutManager mSlideDrawerLayoutManager;    // Declaring Layout Manager as a linear layout manager
     protected LinearLayoutManager mHomepageLayoutManager;
     protected ActionBarDrawerToggle mDrawerToggle;          // Declaring Action Bar Drawer Toggle
     protected FragmentManager mFragmentManager;
+    protected RecyclerItemClickListener mRecyclerItemClickListener;
 
     protected TotalNews mTotalNews;
     protected ArrayList<LatestNews> mNewsArrayList;
     protected LatestNews mYesterdayNews;
     private long mLongDate;
+    private ThemeContent mThemeContent;
+    private int mThemeId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +119,10 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             @Override
             public void onClick(View v) {
                 //Close the slidingDrawer and show the main page
+                if(getSupportActionBar()!=null){
+                    getSupportActionBar().setTitle(R.string.title_activity_main);
+                    getLatestNews();
+                }
                 mDrawerLayout.closeDrawer(mSlidingDrawerRL);
             }
         });
@@ -118,18 +131,21 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
         //update slide drawer themes
         getZhihuThemes();
 
+
         mHomepageRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                    if(mHomepageLayoutManager.findLastCompletelyVisibleItemPosition() ==
-                            mHomepageLayoutManager.getItemCount()-1){
-                        Toast.makeText(MainActivity.this, "Show last day's story!", Toast.LENGTH_LONG).show();
-                        getHistoryNews();
-                    }
+                if(getSupportActionBar().getTitle().equals("知乎小报") &&
+                        mHomepageLayoutManager.findLastCompletelyVisibleItemPosition() ==
+                                mHomepageLayoutManager.getItemCount() - 1){
+                    Toast.makeText(MainActivity.this, "Show last day's story!", Toast.LENGTH_LONG).show();
+                    getHistoryNews();
                 }
+            }
         });
-    }
 
+
+    }
 
 
     @Override
@@ -176,7 +192,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+            int id = item.getItemId();
         switch (id) {
             case R.id.action_logout:
                 if (ParseUser.getCurrentUser() != null) {
@@ -227,6 +243,21 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                                 //initial the adapter
                                 mSlideDrawerRecyclerView.setAdapter(mSlideDrawerAdapter);
                                 mSlideDrawerRecyclerView.setHasFixedSize(true);
+                                //Set the theme's item click listener
+                                mRecyclerItemClickListener = new RecyclerItemClickListener(MainActivity.this,
+                                        new RecyclerItemClickListener.OnItemClickListener() {
+                                            @Override
+                                            public void onItemClick(View view, int position) {
+                                                if(getSupportActionBar()!=null){
+                                                    getSupportActionBar().setTitle(mThemes.getThemes().get(position).getThemeName());
+                                                }
+                                                mThemeId = mThemes.getThemes().get(position).getThemeId();
+                                                mDrawerLayout.closeDrawer(mSlidingDrawerRL);
+                                                //Refresh main content
+                                                getThemeContent(mThemes.getThemes().get(position).getThemeId());
+                                            }
+                                        });
+                                mSlideDrawerRecyclerView.addOnItemTouchListener(mRecyclerItemClickListener);
                             } else {
                                 //refill the adapter
                                 ((SlideDrawerAdapter) (mSlideDrawerRecyclerView.getAdapter())).refill(mThemes.getThemes());
@@ -260,6 +291,90 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                 return themeArray;
             }
         });
+    }
+
+    private void getThemeContent(int themeId) {
+        String themeContentUrl = ZhihuAPI.API_THEME_CONTENT + String.valueOf(themeId);
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(themeContentUrl).build();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+                if(mSwipeRefreshLayout.isRefreshing()){
+                    mSwipeRefreshLayout.setRefreshing(false);
+                }
+            }
+            @Override
+            public void onResponse(Response response) throws IOException {
+                String jsonData = response.body().string();
+                try {
+                    mThemeContent = getThemeContentDetails(jsonData);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(mSwipeRefreshLayout.isRefreshing()){
+                                mSwipeRefreshLayout.setRefreshing(false);
+                            }
+                            mHomepageThemesRecyclerViewAdapter = new HomepageThemesRecyclerViewAdapter(MainActivity.this,
+                                    mThemeContent);
+                            mHomepageRecyclerView.setAdapter(mHomepageThemesRecyclerViewAdapter);
+                            mHomepageRecyclerView.setHasFixedSize(true);
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private ThemeContent getThemeContentDetails(String jsonData) throws JSONException {
+        ThemeContent themeContent = new ThemeContent();
+        JSONObject jsonThemeContent = new JSONObject(jsonData);
+        themeContent.setThemeName(jsonThemeContent.getString("name"));
+        themeContent.setThemeDescription(jsonThemeContent.getString("description"));
+        themeContent.setThemeBackgroundUrl(jsonThemeContent.getString("background"));
+        themeContent.setEditorsArrayList(getEditorsDetails(jsonThemeContent));
+        themeContent.setThemeStoriesArrayList(getThemeStoriesDetails(jsonThemeContent));
+        return themeContent;
+    }
+
+    private ArrayList<ThemeContentEditor> getEditorsDetails(JSONObject jsonThemeContent) throws JSONException {
+        ArrayList<ThemeContentEditor> themeContentEditorArrayList = new ArrayList<>();
+        JSONArray jsonArrayEditors = jsonThemeContent.getJSONArray("editors");
+        for(int i = 0; i<jsonArrayEditors.length(); i++){
+            ThemeContentEditor themeContentEditor = new ThemeContentEditor();
+            JSONObject jsonEditor = jsonArrayEditors.getJSONObject(i);
+            themeContentEditor.setEditorId(jsonEditor.getInt("id"));
+            themeContentEditor.setEditorName(jsonEditor.getString("name"));
+            themeContentEditor.setEditorAvatarUrl(jsonEditor.getString("avatar"));
+            if(jsonEditor.has("bio")){
+                themeContentEditor.setEditorBio(jsonEditor.getString("bio"));
+            }
+            if(jsonEditor.has("url")){
+                themeContentEditor.setEditorUrl(jsonEditor.getString("url"));
+            }
+            themeContentEditorArrayList.add(themeContentEditor);
+        }
+        return themeContentEditorArrayList;
+    }
+
+    private ArrayList<ThemeContentStory> getThemeStoriesDetails(JSONObject jsonThemeContent) throws JSONException {
+        ArrayList<ThemeContentStory> themeContentStoryArrayList = new ArrayList<>();
+        JSONArray jsonArrayStories = jsonThemeContent.getJSONArray("stories");
+        for(int i = 0; i<jsonArrayStories.length(); i++){
+            ThemeContentStory themeContentStory = new ThemeContentStory();
+            JSONObject jsonStory = jsonArrayStories.getJSONObject(i);
+            themeContentStory.setThemeContentStoryId(jsonStory.getLong("id"));
+            themeContentStory.setThemeContentStoryTitle(jsonStory.getString("title"));
+            themeContentStory.setThemeContentStoryType(jsonStory.getInt("type"));
+            if(jsonStory.has("images")) {
+                themeContentStory.setImagesUrl(jsonStory.getJSONArray("images").getString(0));
+            }
+            themeContentStoryArrayList.add(themeContentStory);
+        }
+        return themeContentStoryArrayList;
     }
 
 
@@ -405,7 +520,15 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
 
     @Override
     public void onRefresh() {
-        getLatestNews();
+        if(getSupportActionBar()!=null){
+            if(getSupportActionBar().getTitle().equals("知乎小报")) {
+                getLatestNews();
+            }
+            else {
+                getThemeContent(mThemeId);
+            }
+        }
+
     }
 
 }

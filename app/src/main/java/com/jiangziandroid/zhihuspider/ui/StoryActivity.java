@@ -20,6 +20,7 @@ import com.jiangziandroid.zhihuspider.R;
 import com.jiangziandroid.zhihuspider.model.NewsDetails;
 import com.jiangziandroid.zhihuspider.model.NewsExtras;
 import com.jiangziandroid.zhihuspider.model.Recommender;
+import com.jiangziandroid.zhihuspider.utils.DpConvertPx;
 import com.jiangziandroid.zhihuspider.utils.ZhihuAPI;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
@@ -53,6 +54,8 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
     @InjectView(R.id.image) ImageView mImageView;
     @InjectView(R.id.titleText) TextView mTitleTextView;
     @InjectView(R.id.imageSourceText) TextView mImageSourceTextView;
+    @InjectView(R.id.image_mask) View mImageMaskImageView;
+    @InjectView(R.id.anchor) View mAnchorView;
     @InjectView(R.id.recommendersLL) LinearLayout mRecommendersLL;
     @InjectView(R.id.webView)   WebView mWebView;
     protected long mStoryId;
@@ -134,9 +137,21 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
                         @Override
                         public void run() {
                             //Set Header Image field
-                            Picasso.with(StoryActivity.this).load(mNewsDetails.getImageStringUri()).into(mImageView);
-                            mTitleTextView.setText(mNewsDetails.getTitle());
-                            mImageSourceTextView.setText(mNewsDetails.getImageSource());
+                            if (mNewsDetails.getImageStringUri() != null && mNewsDetails.getImageSource() != null) {
+                                mTitleTextView.setText(mNewsDetails.getTitle());
+                                mImageSourceTextView.setText(mNewsDetails.getImageSource());
+                                Picasso.with(StoryActivity.this).load(mNewsDetails.getImageStringUri()).into(mImageView);
+                            }else {
+                                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                                params.setMargins(0, (int) DpConvertPx.convertDpToPixel(56, StoryActivity.this),0,0);
+                                mRecommendersLL.setLayoutParams(params);
+                                mImageView.setVisibility(View.GONE);
+                                mTitleTextView.setVisibility(View.GONE);
+                                mImageSourceTextView.setVisibility(View.GONE);
+                                mImageMaskImageView.setVisibility(View.GONE);
+                                mAnchorView.setVisibility(View.GONE);
+                            }
                             //Set recommenders field
                             if (mNewsDetails.getRecommenders() == null) {
                                 mRecommendersLL.setVisibility(View.GONE);
@@ -147,7 +162,7 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
                                             .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                                     View v = inflater.inflate(R.layout.recommender_circle_image_view, null);
                                     CircleImageView mRecommenderCircleImageView =
-                                            (CircleImageView) v.findViewById(R.id.recommenderCircleImageView);
+                                            (CircleImageView) v.findViewById(R.id.editorCircleImageView);
                                     Picasso.with(StoryActivity.this)
                                             .load(mNewsDetails.getRecommenders().get(i).getAvatarStringUri())
                                             .resize(64, 64)
@@ -162,11 +177,11 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
                             }
                             //Set Main Content field (Using WebView)
                             String noImagePlaceHolderBody = mNewsDetails.getBody()
-                                    .replace("<div class=\"img-place-holder\"></div>","");
+                                    .replace("<div class=\"img-place-holder\"></div>", "");
                             String customUrl = "<html>" +
                                     "<head><link rel=\"stylesheet\" type=\"text/css\" " +
-                                    "href=" +   mNewsDetails.getCssStringUri()  + "></head>" +
-                                    "<body>"+   noImagePlaceHolderBody + "</body>" +
+                                    "href=" + mNewsDetails.getCssStringUri() + "></head>" +
+                                    "<body>" + noImagePlaceHolderBody + "</body>" +
                                     "</html>";
                             mWebView.loadData(customUrl, "text/html;charset=utf-8", "utf-8");
                         }
@@ -182,9 +197,13 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
         NewsDetails newsDetails = new NewsDetails();
         JSONObject jsonNewsDetails = new JSONObject(jsonData);
         newsDetails.setStoryId(jsonNewsDetails.getLong("id"));
-        newsDetails.setImageStringUri(jsonNewsDetails.getString("image"));
+        if(jsonNewsDetails.has("image")){
+            newsDetails.setImageStringUri(jsonNewsDetails.getString("image"));
+        }
         newsDetails.setTitle(jsonNewsDetails.getString("title"));
-        newsDetails.setImageSource(jsonNewsDetails.getString("image_source"));
+        if(jsonNewsDetails.has("image_source")){
+            newsDetails.setImageSource(jsonNewsDetails.getString("image_source"));
+        }
         newsDetails.setBody(jsonNewsDetails.getString("body"));
         newsDetails.setCssStringUri(jsonNewsDetails.getJSONArray("css").getString(0));
         if(jsonNewsDetails.has("recommenders")){

@@ -21,8 +21,8 @@ import java.util.ArrayList;
 
 public class SlideDrawerAdapter extends RecyclerView.Adapter<SlideDrawerAdapter.SlideDrawerViewHolder> {
 
-    private Themes mThemes;
-    private Context mContext;
+    protected Themes mThemes;
+    protected Context mContext;
 
     public SlideDrawerAdapter(Context context, Themes themes){
         mThemes = themes;
@@ -39,14 +39,22 @@ public class SlideDrawerAdapter extends RecyclerView.Adapter<SlideDrawerAdapter.
     }
 
     //views(View)
-    public static class SlideDrawerViewHolder extends RecyclerView.ViewHolder {
+    public class SlideDrawerViewHolder extends RecyclerView.ViewHolder {
         public ImageView mItemIconImageView;
         public TextView mItemTextTextView;
+        public HomepageThemesRecyclerViewAdapter mHomepageThemesRecyclerViewAdapter;
+        public int mThemeId;
 
         public SlideDrawerViewHolder(View itemView) {
             super(itemView);
             mItemIconImageView = (ImageView) itemView.findViewById(R.id.rowHomepageIcon);
             mItemTextTextView = (TextView) itemView.findViewById(R.id.rowTimeTitleText);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mThemeId = mThemes.getThemes().get(getPosition()).getThemeId();
+                }
+            });
         }
     }
 

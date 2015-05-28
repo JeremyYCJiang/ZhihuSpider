@@ -29,6 +29,7 @@
     </string-array>
     <string name="title_activity_story">StoryActivity</string>
     <string name="recommenders">推荐者</string>
+    <string name="editors">主编</string>
     <string name="title_activity_comments">CommentsActivity</string>
     <string name="comments_count_suffix">条评论</string>
 
