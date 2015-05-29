@@ -92,7 +92,6 @@ public class GridStoriesActivity extends Activity implements SwipeRefreshLayout.
                     mSwipeRefreshLayout.setRefreshing(false);
                 }
             }
-
             @Override
             public void onResponse(Response response) throws IOException {
                 String jsonData = response.body().string();
@@ -119,10 +118,8 @@ public class GridStoriesActivity extends Activity implements SwipeRefreshLayout.
                                     Log.e(getApplication().getPackageName(), "Get data successfully! ^.^");
                                 }
                                 //Check if need to disable Button display
+                                ifLatestIsLastdayNews();
                                 if20130519DisableLastDayButton();
-                                ifTodayDisableNextDayButton();
-                                mDateTextView.setText(mStories.getDate());
-                                mPlaceHolderTextView.setVisibility(View.INVISIBLE);
                                 //Set CardViewStoriesAdapter
                                 mCardViewStoriesAdapter = new CardViewStoriesAdapter
                                                                 (GridStoriesActivity.this, mStories);
@@ -140,28 +137,66 @@ public class GridStoriesActivity extends Activity implements SwipeRefreshLayout.
     }
 
 
+    private void ifLatestIsLastdayNews(){
+        //today
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+        String stringCurrentDate = formatter.format(new GregorianCalendar().getTime());
+        //last day
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(new GregorianCalendar().getTime());
+        calendar1.add(Calendar.DATE, -1);
+        Date minusedDate = calendar1.getTime();
+        String stringMinusedDate = formatter.format(minusedDate);
+        //next day
+        Calendar calendar2 = Calendar.getInstance();
+        calendar2.setTime(new GregorianCalendar().getTime());
+        calendar2.add(Calendar.DATE, 1);
+        Date increasedDate = calendar2.getTime();
+        String stringIncreasedDate = formatter.format(increasedDate);
+
+            //case 1 : today's news has not been created
+        if(mNewsAPI.contains("latest") && !mStories.getDate().equals(stringCurrentDate)){
+            mDateTextView.setText(stringCurrentDate);
+            mNextDayButton.setVisibility(View.INVISIBLE);
+            mPlaceHolderTextView.setVisibility(View.VISIBLE);
+        }
+            //case 2 : today's news has been created
+        else if(mNewsAPI.contains("latest") && mStories.getDate().equals(stringCurrentDate)){
+            mDateTextView.setText(mStories.getDate());
+            mNextDayButton.setVisibility(View.INVISIBLE);
+            mPlaceHolderTextView.setVisibility(View.INVISIBLE);
+        }
+            //case 3 : after press nextDay button there has today's news
+        else if(!mNewsAPI.contains("latest") && mNewsAPI.contains(stringIncreasedDate)
+                && mStories.getDate().equals(stringCurrentDate)){
+            mDateTextView.setText(mStories.getDate());
+            mNextDayButton.setVisibility(View.INVISIBLE);
+            mPlaceHolderTextView.setVisibility(View.INVISIBLE);
+        }
+            //case 4 : after press nextDay button there has not today's news
+        else if(!mNewsAPI.contains("latest") && mNewsAPI.contains(stringIncreasedDate)
+                && mStories.getDate().equals(stringMinusedDate)){
+            mDateTextView.setText(stringCurrentDate);
+            mNextDayButton.setVisibility(View.INVISIBLE);
+            mPlaceHolderTextView.setVisibility(View.VISIBLE);
+        }
+            //normal case
+        else{
+            mDateTextView.setText(mStories.getDate());
+            mNextDayButton.setVisibility(View.VISIBLE);
+            mPlaceHolderTextView.setVisibility(View.INVISIBLE);
+        }
+    }
+
     private void if20130519DisableLastDayButton(){
         if(mStories.getDate().equals("20130519")){
-            mLastDayButton.setVisibility(View.INVISIBLE);
+            mLastDayButton.setVisibility(View.GONE);
+            mDateTextView.setText("小报生日 " + mStories.getDate());
         }else {
             mLastDayButton.setVisibility(View.VISIBLE);
         }
     }
 
-    private void ifTodayDisableNextDayButton() {
-        //Minus 1 day to current day
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new GregorianCalendar().getTime());
-        calendar.add(Calendar.DATE, -1);
-        Date minusDate = calendar.getTime();
-        String minusStringDate = formatter.format(minusDate);
-        if(mStories.getDate().equals(minusStringDate)){
-            mNextDayButton.setVisibility(View.INVISIBLE);
-        }else {
-            mNextDayButton.setVisibility(View.VISIBLE);
-        }
-    }
 
     private LatestNews getNewsDetails(String jsonData) throws JSONException {
         LatestNews latestNews = new LatestNews();
@@ -207,8 +242,37 @@ public class GridStoriesActivity extends Activity implements SwipeRefreshLayout.
         mLastDayButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mLastDayNewsAPI = ZhihuAPI.API_HISTORY_NEWS + mStories.getDate();
-                getStories(mLastDayNewsAPI);
+                //today
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+                String stringCurrentDate = formatter.format(new GregorianCalendar().getTime());
+                //last day
+                Calendar calendar1 = Calendar.getInstance();
+                calendar1.setTime(new GregorianCalendar().getTime());
+                calendar1.add(Calendar.DATE, -1);
+                Date minusedDate = calendar1.getTime();
+                String stringMinusedDate = formatter.format(minusedDate);
+                //next day
+                Calendar calendar2 = Calendar.getInstance();
+                calendar2.setTime(new GregorianCalendar().getTime());
+                calendar2.add(Calendar.DATE, 1);
+                Date increasedDate = calendar2.getTime();
+                String stringIncreasedDate = formatter.format(increasedDate);
+                    //case 1 click:
+                if(mNewsAPI.contains("latest") && !mStories.getDate().equals(stringCurrentDate)){
+                    mNewsAPI = ZhihuAPI.API_HISTORY_NEWS + stringCurrentDate;
+                    getStories(mNewsAPI);
+                }
+                    //case 4 click:
+                else if(!mNewsAPI.contains("latest") && mNewsAPI.contains(stringIncreasedDate)
+                        && mStories.getDate().equals(stringMinusedDate)){
+                    mNewsAPI = ZhihuAPI.API_HISTORY_NEWS + stringCurrentDate;
+                    getStories(mNewsAPI);
+                }
+                    //case 2 , 3 and normal case click:
+                else {
+                    mNewsAPI = ZhihuAPI.API_HISTORY_NEWS + mStories.getDate();
+                    getStories(mNewsAPI);
+                }
             }
         });
         mNextDayButton.setOnClickListener(new View.OnClickListener() {
@@ -218,14 +282,15 @@ public class GridStoriesActivity extends Activity implements SwipeRefreshLayout.
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
                 //Use formatter.parse() to convert a String date to Date
                 try {
+                    //next 2 days
                     Date storyDate = formatter.parse(mStories.getDate());
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(storyDate);
                     calendar.add(Calendar.DATE, 2);
                     Date increasedDate = calendar.getTime();
                     String stringIncreasedDate = formatter.format(increasedDate);
-                    mNextDayNewsAPI = ZhihuAPI.API_HISTORY_NEWS + stringIncreasedDate;
-                    getStories(mNextDayNewsAPI);
+                    mNewsAPI = ZhihuAPI.API_HISTORY_NEWS + stringIncreasedDate;
+                    getStories(mNewsAPI);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
