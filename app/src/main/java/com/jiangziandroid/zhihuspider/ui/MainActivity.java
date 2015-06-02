@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,6 +63,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
     @InjectView(R.id.DrawerLayout) DrawerLayout mDrawerLayout; // Declaring DrawerLayout
     @InjectView(R.id.SlidingDrawerRL) RelativeLayout mSlidingDrawerRL;
     @InjectView(R.id.slideDrawerHomeHeader)  RelativeLayout mHomePageRL;
+    @InjectView(R.id.slideDrawerToolsHeader) LinearLayout mSlideDrawerToolsHeader;
     @InjectView(R.id.swipeRefreshLayout) SwipeRefreshLayout mSwipeRefreshLayout;
     protected Themes mThemes;
     protected LatestNews mLatestNews;
@@ -74,6 +76,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
     protected FragmentManager mFragmentManager;
     protected RecyclerItemClickListener mRecyclerItemClickListener;
 
+    protected ParseUser mCurrentUser;
     protected TotalNews mTotalNews;
     protected ArrayList<LatestNews> mNewsArrayList;
     protected LatestNews mYesterdayNews;
@@ -119,11 +122,17 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             @Override
             public void onClick(View v) {
                 //Close the slidingDrawer and show the main page
-                if(getSupportActionBar()!=null){
+                if (getSupportActionBar() != null) {
                     getSupportActionBar().setTitle(R.string.title_activity_main);
                     getLatestNews();
                 }
                 mDrawerLayout.closeDrawer(mSlidingDrawerRL);
+            }
+        });
+        mSlideDrawerToolsHeader.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Reserved function!", Toast.LENGTH_SHORT).show();
             }
         });
         //update main page content
@@ -157,9 +166,10 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
          It would be bothersome if the user had to log in every time they open your app.
          You can avoid this by using the cached currentUser object.
          **/
-        if (ParseUser.getCurrentUser() != null) {
-            mProfileTextView.setText(ParseUser.getCurrentUser().getUsername());
-            Picasso.with(this).load(ParseUser.getCurrentUser().getString(ParseConstants.KEY_USER_PHOTO_STRING_URI))
+        mCurrentUser = ParseUser.getCurrentUser();
+        if (mCurrentUser != null) {
+            mProfileTextView.setText(mCurrentUser.getUsername());
+            Picasso.with(this).load(mCurrentUser.getString(ParseConstants.KEY_USER_PHOTO_STRING_URI))
                     .resize(96, 96).centerCrop().into(mCircleImageView);
             mUserProfileRL.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -169,15 +179,19 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                     startActivity(intent);
                 }
             });
-        } else {
-            mProfileTextView.setOnClickListener(new View.OnClickListener() {
+        }
+        mProfileTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                    startActivity(intent);
+                    if(mCurrentUser == null){
+                        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                    }else {
+                        Intent intent = new Intent(MainActivity.this, UserInfoActivity.class);
+                        startActivity(intent);
+                    }
                 }
             });
-        }
     }
 
     @Override
@@ -207,10 +221,14 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                         }
                     });
                     Toast.makeText(MainActivity.this, "Logout successfully!", Toast.LENGTH_SHORT).show();
+                }else {
+                    Toast.makeText(MainActivity.this, "Please login first!", Toast.LENGTH_SHORT).show();
                 }
+                break;
             case R.id.action_calendar:
                 Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
                 startActivity(intent);
+                break;
         }
 
         return super.onOptionsItemSelected(item);

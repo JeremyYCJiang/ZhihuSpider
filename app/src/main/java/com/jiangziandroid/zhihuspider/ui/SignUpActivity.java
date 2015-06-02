@@ -67,10 +67,16 @@ public class SignUpActivity extends Activity {
                                 // Hooray! Let them use the app now.
                                 Toast.makeText(SignUpActivity.this, "Sign up successfully and has logged in!", Toast.LENGTH_SHORT).show();
                                 ZhihuSpiderApplication.updateParseInstallation(ParseUser.getCurrentUser());
-                                Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                startActivity(intent);
+                                if (getIntent().getStringExtra("fromStory") != null) {
+                                    Intent returnIntent = new Intent();
+                                    setResult(RESULT_OK, returnIntent);
+                                    finish();
+                                }else {
+                                    Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(intent);
+                                }
                             } else {
                                 // Sign up didn't succeed. Look at the ParseException to figure out what went wrong
                                 AlertDialog.Builder builder = new AlertDialog.Builder(SignUpActivity.this);

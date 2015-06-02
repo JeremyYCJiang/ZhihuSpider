@@ -21,6 +21,7 @@ import butterknife.InjectView;
 
 
 public class LoginActivity extends Activity {
+    public static final int SIGNUP_REQUEST = 1;
 
     @InjectView(R.id.SignUptTextView) TextView mSignUpTextView;
     @InjectView(R.id.LoginNameEditText) EditText mLoginNameEditText;
@@ -56,12 +57,18 @@ public class LoginActivity extends Activity {
                                 // Hooray! The user is logged in.
                                 Toast.makeText(LoginActivity.this, "Login successfully!", Toast.LENGTH_SHORT).show();
                                 ZhihuSpiderApplication.updateParseInstallation(parseUser);
-                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                startActivity(intent);
+                                if (getIntent().getStringExtra("fromStory") != null) {
+                                    Intent returnIntent = new Intent();
+                                    setResult(RESULT_OK, returnIntent);
+                                    finish();
+                                } else {
+                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(intent);
+                                }
                             } else {
-                                // Signin failed. Look at the ParseException to see what happened.
+                                // login failed. Look at the ParseException to see what happened.
                                 AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
                                 builder.setTitle(getString(R.string.login_error_tittle))
                                         .setMessage(e.getMessage())
@@ -80,9 +87,31 @@ public class LoginActivity extends Activity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
-                startActivity(intent);
+                if(getIntent().getStringExtra("fromStory") != null){
+                    intent.putExtra("fromStory", "fromStory");
+                    startActivityForResult(intent, SIGNUP_REQUEST);
+                }
+                else {
+                    startActivity(intent);
+                }
+
             }
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK){
+            Toast.makeText(this, "Successfully signUp and login!", Toast.LENGTH_LONG).show();
+            Intent returnIntent = new Intent();
+            setResult(RESULT_OK, returnIntent);
+            finish();
+        }
+        else if(resultCode == RESULT_CANCELED){
+            Toast.makeText(this, "User canceled signUp!", Toast.LENGTH_LONG).show();
+        }else {
+            Toast.makeText(this, "Other Error!", Toast.LENGTH_LONG).show();
+        }
+    }
 }

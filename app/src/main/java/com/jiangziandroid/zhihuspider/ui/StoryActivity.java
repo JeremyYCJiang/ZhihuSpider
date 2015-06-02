@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.ksoichiro.android.observablescrollview.ObservableScrollView;
 import com.github.ksoichiro.android.observablescrollview.ObservableScrollViewCallbacks;
@@ -21,7 +23,16 @@ import com.jiangziandroid.zhihuspider.model.NewsDetails;
 import com.jiangziandroid.zhihuspider.model.NewsExtras;
 import com.jiangziandroid.zhihuspider.model.Recommender;
 import com.jiangziandroid.zhihuspider.utils.DpConvertPx;
+import com.jiangziandroid.zhihuspider.utils.ParseConstants;
 import com.jiangziandroid.zhihuspider.utils.ZhihuAPI;
+import com.parse.DeleteCallback;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseRelation;
+import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.OkHttpClient;
@@ -35,12 +46,20 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+//import com.parse.ParseException;
+
 public class StoryActivity extends AppCompatActivity implements ObservableScrollViewCallbacks{
+    public static final int LOGIN_REQUEST = 0;
+    public ParseUser mCurrentUser;
+    public ParseRelation<ParseObject> mFavouriteRelation;
+    public ParseObject mFavouriteStories;
+
     @InjectView(R.id.scroll)  ObservableScrollView mObservableScrollView;
 //    @InjectView(R.id.tool_bar)  android.support.v7.widget.Toolbar mToolbar;
     @InjectView(R.id.AppBarRL) RelativeLayout mAppBarRL;
@@ -80,15 +99,52 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
 //        mToolbar.setAlpha(1);
         mParallaxImageHeight = getResources().getDimensionPixelSize(R.dimen.parallax_image_height);
         mStoryId = getIntent().getLongExtra("StoryId", 404);
+        mCurrentUser = ParseUser.getCurrentUser();
         getNews();
+        getNewsExtras();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        getNewsExtras();
+        getFavouriteIcon();
         setAppBarOnClickListener();
     }
+
+
+
+    private void getFavouriteIcon() {
+        if(mCurrentUser != null){
+            mFavouriteRelation = mCurrentUser.getRelation(ParseConstants.KEY_FAVOURITE_STORY_RELATION);
+            ParseQuery<ParseObject> query = mFavouriteRelation.getQuery();
+            query.whereEqualTo("storyId", String.valueOf(mStoryId));
+            query.findInBackground(new FindCallback<ParseObject>() {
+                @Override
+                public void done(List<ParseObject> list, ParseException e) {
+                    if (e == null) {
+                        if(list.size() == 0){
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mCollectImageView.setImageResource(R.drawable.ic_action_collect);
+                                }
+                            });
+                        }else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mCollectImageView.setImageResource(R.drawable.ic_action_collected);
+                                }
+                            });
+                        }
+                    } else {
+                        Log.e("FindWhenGet", "Error: " + e.getMessage());
+                    }
+                }
+            });
+        }
+    }
+
 
     private void setAppBarOnClickListener() {
         mBackHomeImageView.setOnClickListener(new View.OnClickListener() {
@@ -109,7 +165,118 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
                 startCommentsActivity();
             }
         });
+        mCollectImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Check if user has logged in
+                if (mCurrentUser != null) {
+                    //check if this story has saved to favourite
+                    //if saved, remove from favourite; if not saved, save to favourite
+                    toggleFavouriteStatus();
+                } else {
+                    // show the login screen
+                    Intent intent = new Intent(StoryActivity.this, LoginActivity.class);
+                    intent.putExtra("fromStory", "fromStory");
+                    startActivityForResult(intent, LOGIN_REQUEST);
+                }
+            }
+        });
     }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK){
+            //set the status of the story(if has been collected?)
+            mCurrentUser = ParseUser.getCurrentUser();
+            getFavouriteIcon();
+        }
+        else if(resultCode == RESULT_CANCELED){
+            Toast.makeText(this, "User canceled login!", Toast.LENGTH_LONG).show();
+        }else {
+            Toast.makeText(this, "Other Error!", Toast.LENGTH_LONG).show();
+        }
+    }
+
+
+    private void toggleFavouriteStatus() {
+        //query if this story has been collected
+        mFavouriteRelation = mCurrentUser.getRelation(ParseConstants.KEY_FAVOURITE_STORY_RELATION);
+        ParseQuery<ParseObject> query = mFavouriteRelation.getQuery();
+        query.whereEqualTo("storyId", String.valueOf(mStoryId));
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> list, ParseException e) {
+                if (e == null) {
+                    if (list.size() == 0) {
+                        mFavouriteStories = new ParseObject("FavouriteStories");
+                        mFavouriteStories.put("storyId", String.valueOf(mStoryId));
+                        mFavouriteStories.saveInBackground(new SaveCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                if (e == null) {
+                                    mFavouriteRelation.add(mFavouriteStories);
+                                    mCurrentUser.saveInBackground(new SaveCallback() {
+                                        @Override
+                                        public void done(ParseException e) {
+                                            if (e == null) {
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        mCollectImageView.setImageResource(R.drawable.ic_action_collected);
+                                                        Toast.makeText(StoryActivity.this, "Saved to my Favourite!", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                            } else {
+                                                Log.e("SaveRelation", "Error: " + e.getMessage());
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    Log.e("SaveParseObject", "Error: " + e.getMessage());
+                                }
+                            }
+                        });
+                    } else {
+                        mFavouriteStories = list.get(0);
+                        mFavouriteRelation.remove(mFavouriteStories);
+                        mFavouriteStories.deleteInBackground(new DeleteCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                if (e == null) {
+                                    mCurrentUser.saveInBackground(new SaveCallback() {
+                                        @Override
+                                        public void done(ParseException e) {
+                                            if (e == null) {
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        mCollectImageView.setImageResource(R.drawable.ic_action_collect);
+                                                        Toast.makeText(StoryActivity.this, "Removed from my Favourite!", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                            } else {
+                                                Log.e("RemoveRelation", "Error: " + e.getMessage());
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    Log.e("DeleteParseObject", "Error: " + e.getMessage());
+                                }
+                            }
+                        });
+
+                    }
+                } else {
+                    Log.e("FindWhenToggle", "Error: " + e.getMessage());
+                }
+            }
+        });
+
+    }
+
+
 
     private void startCommentsActivity() {
         Intent intent = new Intent(StoryActivity.this, CommentsActivity.class);
@@ -223,7 +390,6 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
         }
          return recommenderArrayList;
     }
-
 
 
     private void getNewsExtras() {
