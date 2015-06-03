@@ -14,7 +14,7 @@
                 android:background="@android:color/white">
 
             <TextView
-                android:id="@+id/rowHomepageText"
+                android:id="@+id/rowCollectionText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="test"
@@ -32,6 +32,7 @@
                 android:id="@+id/rowCollectionIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:src="@drawable/ic_action_collected"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:padding="4dp"/>

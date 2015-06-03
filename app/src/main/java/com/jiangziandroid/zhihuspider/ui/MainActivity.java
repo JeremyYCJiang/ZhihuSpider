@@ -34,6 +34,8 @@ import com.jiangziandroid.zhihuspider.model.TotalNews;
 import com.jiangziandroid.zhihuspider.utils.ParseConstants;
 import com.jiangziandroid.zhihuspider.utils.RecyclerItemClickListener;
 import com.jiangziandroid.zhihuspider.utils.ZhihuAPI;
+import com.parse.LogOutCallback;
+import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
@@ -64,6 +66,9 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
     @InjectView(R.id.SlidingDrawerRL) RelativeLayout mSlidingDrawerRL;
     @InjectView(R.id.slideDrawerHomeHeader)  RelativeLayout mHomePageRL;
     @InjectView(R.id.slideDrawerToolsHeader) LinearLayout mSlideDrawerToolsHeader;
+    @InjectView(R.id.collectionLL) LinearLayout mCollectionLL;
+    @InjectView(R.id.messageLL) LinearLayout mMessageLL;
+    @InjectView(R.id.settingsLL) LinearLayout mSettingsLL;
     @InjectView(R.id.swipeRefreshLayout) SwipeRefreshLayout mSwipeRefreshLayout;
     protected Themes mThemes;
     protected LatestNews mLatestNews;
@@ -129,12 +134,15 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
                 mDrawerLayout.closeDrawer(mSlidingDrawerRL);
             }
         });
-        mSlideDrawerToolsHeader.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Reserved function!", Toast.LENGTH_SHORT).show();
-            }
-        });
+//        mSlideDrawerToolsHeader.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Toast.makeText(MainActivity.this, "Reserved function!", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+
+        //Set slide drawer tools header onClickListener
+        setSlideDrawerToolsHeaderOnClickListener();
         //update main page content
         getLatestNews();
         //update slide drawer themes
@@ -156,6 +164,45 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
 
     }
 
+    private void setSlideDrawerToolsHeaderOnClickListener() {
+        mCollectionLL.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mCurrentUser != null){
+                    Toast.makeText(MainActivity.this, "Collection function!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MainActivity.this, CollectionActivity.class);
+                    startActivity(intent);
+                }
+                else {
+                    Toast.makeText(MainActivity.this, "Please login first!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                }
+            }
+
+        });
+        mMessageLL.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mCurrentUser != null){
+                    Toast.makeText(MainActivity.this, "Message function!", Toast.LENGTH_SHORT).show();
+
+                }
+                else {
+                    Toast.makeText(MainActivity.this, "Please login first!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                }
+            }
+        });
+        mSettingsLL.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Settings function!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 
     @Override
     protected void onResume() {
@@ -171,15 +218,19 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             mProfileTextView.setText(mCurrentUser.getUsername());
             Picasso.with(this).load(mCurrentUser.getString(ParseConstants.KEY_USER_PHOTO_STRING_URI))
                     .resize(96, 96).centerCrop().into(mCircleImageView);
-            mUserProfileRL.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //go to user info page
+        }
+        mCircleImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mCurrentUser == null){
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                }else {
                     Intent intent = new Intent(MainActivity.this, UserInfoActivity.class);
                     startActivity(intent);
                 }
-            });
-        }
+            }
+        });
         mProfileTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -210,17 +261,34 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
         switch (id) {
             case R.id.action_logout:
                 if (ParseUser.getCurrentUser() != null) {
-                    ParseUser.logOut();
-                    mProfileTextView.setText(R.string.remind_user_login_text);
-                    mCircleImageView.setImageResource(R.drawable.ic_action_carema);
-                    mProfileTextView.setOnClickListener(new View.OnClickListener() {
+                    ParseUser.logOutInBackground(new LogOutCallback() {
                         @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                            startActivity(intent);
+                        public void done(ParseException e) {
+                            if (e == null) {
+                                mProfileTextView.setText(R.string.remind_user_login_text);
+                                mCircleImageView.setImageResource(R.drawable.ic_action_carema);
+                                mProfileTextView.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                                        startActivity(intent);
+                                    }
+                                });
+                                mCircleImageView.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                                        startActivity(intent);
+                                    }
+                                });
+                                mCurrentUser = ParseUser.getCurrentUser();
+                                if(mCurrentUser == null)
+                                Toast.makeText(MainActivity.this, "Logout successfully!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.e("Logout", "Error: " + e.getMessage());
+                            }
                         }
                     });
-                    Toast.makeText(MainActivity.this, "Logout successfully!", Toast.LENGTH_SHORT).show();
                 }else {
                     Toast.makeText(MainActivity.this, "Please login first!", Toast.LENGTH_SHORT).show();
                 }

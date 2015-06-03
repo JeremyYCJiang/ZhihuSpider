@@ -78,7 +78,7 @@ public class HomepageThemesRecyclerViewAdapter extends
                 mEditorsLL = (LinearLayout) itemView.findViewById(R.id.editorsLL);
             }else {
                 itemView.setOnClickListener(this);
-                mThemeContentImage = (ImageView) itemView.findViewById(R.id.rowHomepageIcon);
+                mThemeContentImage = (ImageView) itemView.findViewById(R.id.rowCollectionIcon);
                 mThemeContentText = (TextView) itemView.findViewById(R.id.rowHomepageText);
                 HolderId = 2;
             }

@@ -1,0 +1,66 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                tools:context="com.jiangziandroid.zhihuspider.ui.CollectionActivity">
+
+    <!--Use RelativeLayout as AppBar-->
+    <RelativeLayout
+        android:id="@+id/AppBarRL"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/tool_bar_height"
+        android:background="@color/ColorPrimary"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/BackImageView"
+            android:src="@drawable/ic_action_back_arrow"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginLeft="15dp"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/collectionImage"
+            android:src="@drawable/ic_action_collected"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/BackImageView"
+            android:layout_toEndOf="@+id/BackImageView"
+            android:layout_marginLeft="10dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/my_collection"
+            android:id="@+id/CollectionText"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/collectionImage"
+            android:layout_toEndOf="@+id/collectionImage"
+            android:layout_marginLeft="5dp"/>
+    </RelativeLayout>
+
+
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/CollectionRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/light_purple_background"
+            android:scrollbars="vertical"
+            android:paddingBottom="@dimen/content_item_vertical_margin"
+            android:clipToPadding="false">
+        </android.support.v7.widget.RecyclerView>
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+</LinearLayout>

@@ -6,7 +6,7 @@
                 android:padding="8dp">
 
     <ImageView
-        android:id="@+id/rowHomepageIcon"
+        android:id="@+id/rowCollectionIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_action_search"
@@ -21,8 +21,8 @@
         android:text="test"
         android:layout_alignParentTop="true"
         android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/rowHomepageIcon"
-        android:layout_toEndOf="@+id/rowHomepageIcon"
+        android:layout_toRightOf="@+id/rowCollectionIcon"
+        android:layout_toEndOf="@+id/rowCollectionIcon"
         android:layout_marginLeft="20dp"
         android:textColor="@color/ColorPrimary"
         android:textSize="20sp"/>

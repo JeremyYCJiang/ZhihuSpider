@@ -93,7 +93,7 @@ public class HomepageRecyclerViewAdapter extends
                 HolderId = 1;
             }else {
                 itemView.setOnClickListener(this);
-                mItemIconImageView = (ImageView) itemView.findViewById(R.id.rowHomepageIcon);
+                mItemIconImageView = (ImageView) itemView.findViewById(R.id.rowCollectionIcon);
                 mItemTextTextView = (TextView) itemView.findViewById(R.id.rowHomepageText);
                 mMultipicLL = (LinearLayout) itemView.findViewById(R.id.multipicLL);
                 HolderId = 2;

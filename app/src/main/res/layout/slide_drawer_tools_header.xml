@@ -9,7 +9,8 @@
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:id="@+id/collectionLL">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -30,7 +31,8 @@
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:id="@+id/messageLL">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -51,7 +53,8 @@
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:id="@+id/settingsLL">
 
         <ImageView
             android:layout_width="wrap_content"

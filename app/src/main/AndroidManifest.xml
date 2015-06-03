@@ -84,6 +84,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.jiangziandroid.zhihuspider.ui.CalendarActivity" />
         </activity>
+        <activity
+            android:name=".ui.CollectionActivity"
+            android:label="@string/title_activity_collection"
+            android:parentActivityName=".ui.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.jiangziandroid.zhihuspider.ui.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

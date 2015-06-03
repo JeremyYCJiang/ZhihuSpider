@@ -212,6 +212,8 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
                     if (list.size() == 0) {
                         mFavouriteStories = new ParseObject("FavouriteStories");
                         mFavouriteStories.put("storyId", String.valueOf(mStoryId));
+                        mFavouriteStories.put("storyTitle", mNewsDetails.getTitle());
+                        mFavouriteStories.put("storyImageUrl", mNewsDetails.getImageStringUri());
                         mFavouriteStories.saveInBackground(new SaveCallback() {
                             @Override
                             public void done(ParseException e) {

@@ -42,12 +42,11 @@ public class SlideDrawerAdapter extends RecyclerView.Adapter<SlideDrawerAdapter.
     public class SlideDrawerViewHolder extends RecyclerView.ViewHolder {
         public ImageView mItemIconImageView;
         public TextView mItemTextTextView;
-        public HomepageThemesRecyclerViewAdapter mHomepageThemesRecyclerViewAdapter;
         public int mThemeId;
 
         public SlideDrawerViewHolder(View itemView) {
             super(itemView);
-            mItemIconImageView = (ImageView) itemView.findViewById(R.id.rowHomepageIcon);
+            mItemIconImageView = (ImageView) itemView.findViewById(R.id.rowCollectionIcon);
             mItemTextTextView = (TextView) itemView.findViewById(R.id.rowTimeTitleText);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
