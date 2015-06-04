@@ -1,7 +1,11 @@
 package com.jiangziandroid.zhihuspider.ui;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.LabeledIntent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -181,7 +185,98 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
                 }
             }
         });
+        mShareImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /**
+                 * NOTE:
+                 * Basically, it's creating an ACTION_SEND intent for the native email client ONLY, then
+                 * tacking other intents onto the chooser.
+                 * Making the original intent email-specific gets rid of all the extra junk like wifi and
+                 * bluetooth, then I grab the other intents I want from a generic ACTION_SEND of type plaintext,
+                 * and tack them on before showing the chooser.
+                 *
+                 * When I grab the additional intents, I set custom text for each one.
+                 */
+                //create email intent
+                Intent emailIntent = new Intent();
+                emailIntent.setAction(Intent.ACTION_SEND);
+                // Native email client doesn't currently support HTML, but it doesn't hurt to try in case they fix it
+                emailIntent.putExtra(Intent.EXTRA_TEXT, ZhihuAPI.API_SHARE_LINK + mStoryId);
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, mNewsDetails.getTitle());
+                emailIntent.setType("message/rfc822");
+
+                //create an intent chooser
+                Intent openInChooser = Intent.createChooser(emailIntent, "Share to :");
+
+                PackageManager packageManager = getPackageManager();
+                Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                sendIntent.setType("text/plain");
+                //query all the apps that ACTION_SEND can use
+                List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(sendIntent, 0);
+                List<LabeledIntent> labeledIntentList = new ArrayList<>();
+                for (int i = 0; i<resolveInfoList.size(); i++){
+                    ResolveInfo resolveInfo = resolveInfoList.get(i);
+                    String packageName = resolveInfo.activityInfo.packageName;
+                    if(packageName.contains("android.gm")){
+                        emailIntent.setPackage(packageName);
+                    }
+                    /**
+                     * Use Google Play [https://play.google.com/store/apps] to check package name of an app
+                     */
+                    //gmail  : com.google.android.gm
+
+                    //weibo  : com.sina.weibo
+                    //weixin : com.tencent.mm
+                    //QQ     : com.tencent.mobileqq
+                    //Pocket : com.ideashower.readitlater.pro
+                    //Mail Master : com.netease.mail
+
+                    if(packageName.contains("weibo")||packageName.contains("tencent.mm")||
+                            packageName.contains("readitlater")||packageName.contains("mail")){
+                        Intent intent = new Intent();
+                        intent.setComponent(new ComponentName(packageName, resolveInfo.activityInfo.name));
+                        intent.setAction(Intent.ACTION_SEND);
+                        intent.setType("text/plain");
+                        if(packageName.contains("weibo")){
+                            //Add data to the intent, the receiving app will decide what to do with it.
+                            intent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle()+" (share from @知乎小报) "
+                                    + ZhihuAPI.API_SHARE_LINK + mStoryId);
+                        }else if(packageName.contains("tencent.mm")){
+                            intent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle()+" (share from @知乎小报) "
+                                    + ZhihuAPI.API_SHARE_LINK + mStoryId);
+                        }else if(packageName.contains("readitlater")){
+                            intent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle()+" (share from @知乎小报) "
+                                    + ZhihuAPI.API_SHARE_LINK + mStoryId);
+                        }else if(packageName.contains("mail")){
+                            intent.putExtra(Intent.EXTRA_TEXT, ZhihuAPI.API_SHARE_LINK + mStoryId);
+                            intent.putExtra(Intent.EXTRA_SUBJECT, mNewsDetails.getTitle());
+                        }
+                        labeledIntentList.add(new LabeledIntent(intent, packageName,
+                                resolveInfo.loadLabel(packageManager), resolveInfo.icon));
+                    }
+                }
+                // convert labeledIntentList to array
+                LabeledIntent[] labeledIntentArray = labeledIntentList
+                        .toArray(new LabeledIntent[labeledIntentList.size()]);
+                openInChooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, labeledIntentArray);
+                startActivity(openInChooser);
+
+
+//                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(StoryActivity.this);
+//                // Get the layout inflater
+//                final LayoutInflater inflater = getLayoutInflater();
+//                // Inflate and set the layout for the dialog
+//                // Pass null as the parent view because its going in the dialog layout
+//                View dialogView = inflater.inflate(R.layout.share_dialog, null);
+//                dialogBuilder.setTitle(R.string.share_dialog_title)
+//                             .setView(dialogView);
+//                AlertDialog alertDialog = dialogBuilder.create();
+//                alertDialog.show();
+            }
+        });
     }
+
 
 
     @Override

@@ -105,7 +105,10 @@ public class CollectionRecyclerViewAdapter extends
                                                                     if (e == null) {
                                                                         Toast.makeText(mContext, "Removed from my Favourite!", Toast.LENGTH_SHORT).show();
                                                                         mStoryArrayList.remove(getPosition());
-                                                                        //update recycler View
+                                                                        /**
+                                                                         * Update recycler View :
+                                                                         * The line below is important.
+                                                                         */
                                                                         notifyDataSetChanged();
                                                                     } else {
                                                                         Log.e("RemoveRelation", "Error: " + e.getMessage());
