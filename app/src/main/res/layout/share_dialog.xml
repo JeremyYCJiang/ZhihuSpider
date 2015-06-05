@@ -20,8 +20,9 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:id="@+id/weiboImage"
-                android:src="@drawable/ic_action_shared"
-                android:layout_gravity="center_horizontal"/>
+                android:src="@drawable/sina_weibo_icon"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="5dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -41,15 +42,16 @@
             <ImageView
                 android:layout_width="64dp"
                 android:layout_height="64dp"
-                android:id="@+id/wechatFriendsImage"
-                android:src="@drawable/ic_action_shared"
-                android:layout_gravity="center_horizontal"/>
+                android:id="@+id/wechatFriendsOrCollectImage"
+                android:src="@drawable/weixin_icon"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="5dp"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/share_weChat_friends"
-                android:id="@+id/wechatFriendsText"
+                android:text="@string/share_weChat_friendsOrCollect"
+                android:id="@+id/wechatFriendsOrCollectText"
                 android:textColor="@color/ColorPrimary"
                 android:gravity="center_horizontal"/>
         </LinearLayout>
@@ -64,8 +66,9 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:id="@+id/wechatCircleImage"
-                android:src="@drawable/ic_action_shared"
-                android:layout_gravity="center_horizontal"/>
+                android:src="@drawable/weixin_circle"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="5dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -94,8 +97,9 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:id="@+id/emailImage"
-                android:src="@drawable/ic_action_shared"
-                android:layout_gravity="center_horizontal"/>
+                android:src="@drawable/email_icon"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="5dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -117,8 +121,9 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:id="@+id/pocketImage"
-                android:src="@drawable/ic_action_shared"
-                android:layout_gravity="center_horizontal"/>
+                android:src="@drawable/pocket_icon"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="5dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -139,8 +144,9 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:id="@+id/otherPlatformImage"
-                android:src="@drawable/ic_action_shared"
-                android:layout_gravity="center_horizontal"/>
+                android:src="@drawable/other_platform"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="5dp"/>
 
             <TextView
                 android:layout_width="match_parent"

@@ -1,12 +1,15 @@
 package com.jiangziandroid.zhihuspider.ui;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.LabeledIntent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -48,12 +51,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import cn.sharesdk.framework.ShareSDK;
+import cn.sharesdk.onekeyshare.OnekeyShare;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 //import com.parse.ParseException;
@@ -185,98 +191,277 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
                 }
             }
         });
+        //use ShareSDK to share, just for test
+        mShareImageView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                showShare();
+                return true;
+            }
+        });
+        //use app client to share
         mShareImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /**
-                 * NOTE:
-                 * Basically, it's creating an ACTION_SEND intent for the native email client ONLY, then
-                 * tacking other intents onto the chooser.
-                 * Making the original intent email-specific gets rid of all the extra junk like wifi and
-                 * bluetooth, then I grab the other intents I want from a generic ACTION_SEND of type plaintext,
-                 * and tack them on before showing the chooser.
-                 *
-                 * When I grab the additional intents, I set custom text for each one.
-                 */
-                //create email intent
-                Intent emailIntent = new Intent();
-                emailIntent.setAction(Intent.ACTION_SEND);
-                // Native email client doesn't currently support HTML, but it doesn't hurt to try in case they fix it
-                emailIntent.putExtra(Intent.EXTRA_TEXT, ZhihuAPI.API_SHARE_LINK + mStoryId);
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, mNewsDetails.getTitle());
-                emailIntent.setType("message/rfc822");
-
-                //create an intent chooser
-                Intent openInChooser = Intent.createChooser(emailIntent, "Share to :");
-
-                PackageManager packageManager = getPackageManager();
-                Intent sendIntent = new Intent(Intent.ACTION_SEND);
-                sendIntent.setType("text/plain");
-                //query all the apps that ACTION_SEND can use
-                List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(sendIntent, 0);
-                List<LabeledIntent> labeledIntentList = new ArrayList<>();
-                for (int i = 0; i<resolveInfoList.size(); i++){
-                    ResolveInfo resolveInfo = resolveInfoList.get(i);
-                    String packageName = resolveInfo.activityInfo.packageName;
-                    if(packageName.contains("android.gm")){
-                        emailIntent.setPackage(packageName);
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(StoryActivity.this);
+                // Get the layout inflater
+                LayoutInflater inflater = getLayoutInflater();
+                // Inflate and set the layout for the dialog
+                // Pass null as the parent view because its going in the dialog layout
+                View dialogView = inflater.inflate(R.layout.share_dialog, null);
+                dialogBuilder.setTitle(R.string.share_dialog_title)
+                        .setView(dialogView);
+                final AlertDialog alertDialog = dialogBuilder.create();
+                alertDialog.show();
+                //1.share to sina weibo
+                dialogView.findViewById(R.id.weiboImage).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        shareToSinaWeibo();
+                        alertDialog.dismiss();
                     }
-                    /**
-                     * Use Google Play [https://play.google.com/store/apps] to check package name of an app
-                     */
-                    //gmail  : com.google.android.gm
-
-                    //weibo  : com.sina.weibo
-                    //weixin : com.tencent.mm
-                    //QQ     : com.tencent.mobileqq
-                    //Pocket : com.ideashower.readitlater.pro
-                    //Mail Master : com.netease.mail
-
-                    if(packageName.contains("weibo")||packageName.contains("tencent.mm")||
-                            packageName.contains("readitlater")||packageName.contains("mail")){
-                        Intent intent = new Intent();
-                        intent.setComponent(new ComponentName(packageName, resolveInfo.activityInfo.name));
-                        intent.setAction(Intent.ACTION_SEND);
-                        intent.setType("text/plain");
-                        if(packageName.contains("weibo")){
-                            //Add data to the intent, the receiving app will decide what to do with it.
-                            intent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle()+" (share from @知乎小报) "
-                                    + ZhihuAPI.API_SHARE_LINK + mStoryId);
-                        }else if(packageName.contains("tencent.mm")){
-                            intent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle()+" (share from @知乎小报) "
-                                    + ZhihuAPI.API_SHARE_LINK + mStoryId);
-                        }else if(packageName.contains("readitlater")){
-                            intent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle()+" (share from @知乎小报) "
-                                    + ZhihuAPI.API_SHARE_LINK + mStoryId);
-                        }else if(packageName.contains("mail")){
-                            intent.putExtra(Intent.EXTRA_TEXT, ZhihuAPI.API_SHARE_LINK + mStoryId);
-                            intent.putExtra(Intent.EXTRA_SUBJECT, mNewsDetails.getTitle());
-                        }
-                        labeledIntentList.add(new LabeledIntent(intent, packageName,
-                                resolveInfo.loadLabel(packageManager), resolveInfo.icon));
+                });
+                //2.share to weixin friends or collect
+                dialogView.findViewById(R.id.wechatFriendsOrCollectImage).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        shareToWeixin();
+                        alertDialog.dismiss();
                     }
-                }
-                // convert labeledIntentList to array
-                LabeledIntent[] labeledIntentArray = labeledIntentList
-                        .toArray(new LabeledIntent[labeledIntentList.size()]);
-                openInChooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, labeledIntentArray);
-                startActivity(openInChooser);
-
-
-//                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(StoryActivity.this);
-//                // Get the layout inflater
-//                final LayoutInflater inflater = getLayoutInflater();
-//                // Inflate and set the layout for the dialog
-//                // Pass null as the parent view because its going in the dialog layout
-//                View dialogView = inflater.inflate(R.layout.share_dialog, null);
-//                dialogBuilder.setTitle(R.string.share_dialog_title)
-//                             .setView(dialogView);
-//                AlertDialog alertDialog = dialogBuilder.create();
-//                alertDialog.show();
+                });
+                //3.share to weixin circle
+                dialogView.findViewById(R.id.wechatCircleImage).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        shareToWeixinCircle();
+                        alertDialog.dismiss();
+                    }
+                });
+                //4.share to email
+                dialogView.findViewById(R.id.emailImage).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        shareToEmail();
+                        alertDialog.dismiss();
+                    }
+                });
+                //5.share to Pocket
+                dialogView.findViewById(R.id.pocketImage).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        shareToPocket();
+                        alertDialog.dismiss();
+                    }
+                });
+                //6.share to other platform
+                dialogView.findViewById(R.id.otherPlatformImage).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        shareToOtherPlatform();
+                        alertDialog.dismiss();
+                    }
+                });
             }
         });
     }
 
+    private void shareToOtherPlatform() {
+        /**
+         * NOTE:
+         * Basically, it's creating an ACTION_SEND intent for the native email client ONLY, then
+         * tacking other intents onto the chooser.
+         * Making the original intent email-specific gets rid of all the extra junk like wifi and
+         * bluetooth, then I grab the other intents I want from a generic ACTION_SEND of type plaintext,
+         * and tack them on before showing the chooser.
+         *
+         * When I grab the additional intents, I set custom text for each one.
+         */
+        //create email intent
+        Intent emailIntent = new Intent();
+        emailIntent.setAction(Intent.ACTION_SEND);
+        // Native email client doesn't currently support HTML, but it doesn't hurt to try in case they fix it
+        emailIntent.putExtra(Intent.EXTRA_TEXT, ZhihuAPI.API_SHARE_LINK + mStoryId);
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, mNewsDetails.getTitle());
+        emailIntent.setType("message/rfc822");
+
+        //create an intent chooser
+        Intent openInChooser = Intent.createChooser(emailIntent, "Share to :");
+
+        PackageManager packageManager = getPackageManager();
+        Intent sendIntent = new Intent(Intent.ACTION_SEND);
+        sendIntent.setType("text/plain");
+        //query all the apps that ACTION_SEND can use
+        List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(sendIntent, 0);
+        List<LabeledIntent> labeledIntentList = new ArrayList<>();
+        for (int i = 0; i<resolveInfoList.size(); i++){
+            ResolveInfo resolveInfo = resolveInfoList.get(i);
+            String packageName = resolveInfo.activityInfo.packageName;
+            if(packageName.contains("android.gm")){
+                emailIntent.setPackage(packageName);
+            }
+            /**
+             * Use Google Play [https://play.google.com/store/apps] to check package name of an app
+             */
+            //gmail  : com.google.android.gm
+
+            //weibo  : com.sina.weibo
+            //weixin : com.tencent.mm
+            //QQ     : com.tencent.mobileqq
+            //Pocket : com.ideashower.readitlater.pro
+            //Mail Master : com.netease.mail
+
+            if(packageName.contains("weibo")||packageName.contains("tencent.mm")||
+                    packageName.contains("readitlater")||packageName.contains("mail")){
+                Intent intent = new Intent();
+                intent.setComponent(new ComponentName(packageName, resolveInfo.activityInfo.name));
+                intent.setAction(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                if(packageName.contains("weibo")){
+                    //Add data to the intent, the receiving app will decide what to do with it.
+                    intent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle()+" (share from @知乎小报) "
+                            + ZhihuAPI.API_SHARE_LINK + mStoryId);
+                }else if(packageName.contains("tencent.mm")){
+                    intent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle()+" (share from @知乎小报) "
+                            + ZhihuAPI.API_SHARE_LINK + mStoryId);
+                }else if(packageName.contains("readitlater")){
+                    intent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle()+" (share from @知乎小报) "
+                            + ZhihuAPI.API_SHARE_LINK + mStoryId);
+                }else if(packageName.contains("mail")){
+                    intent.putExtra(Intent.EXTRA_TEXT, ZhihuAPI.API_SHARE_LINK + mStoryId);
+                    intent.putExtra(Intent.EXTRA_SUBJECT, mNewsDetails.getTitle());
+                }
+                labeledIntentList.add(new LabeledIntent(intent, packageName,
+                        resolveInfo.loadLabel(packageManager), resolveInfo.icon));
+            }
+        }
+        // convert labeledIntentList to array
+        LabeledIntent[] labeledIntentArray = labeledIntentList
+                .toArray(new LabeledIntent[labeledIntentList.size()]);
+        openInChooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, labeledIntentArray);
+        startActivity(openInChooser);
+    }
+
+    public void shareToSinaWeibo(){
+        boolean found = false;
+        PackageManager packageManager = getPackageManager();
+        Intent sinaWeiboIntent = new Intent(Intent.ACTION_SEND);
+        sinaWeiboIntent.setType("text/plain");
+        //query all the apps that ACTION_SEND can use
+        List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(sinaWeiboIntent, 0);
+        for(ResolveInfo resolveInfo : resolveInfoList){
+            String packageName = resolveInfo.activityInfo.packageName;
+            if(packageName.contains("sina.weibo")){
+                found = true;
+                sinaWeiboIntent.setPackage(packageName);
+                sinaWeiboIntent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle() + " (share from @知乎小报) "
+                        + ZhihuAPI.API_SHARE_LINK + mStoryId);
+                startActivity(sinaWeiboIntent);
+                break;
+            }
+        }
+        if(!found){
+            Toast.makeText(this, "Please install sina Weibo first!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void shareToWeixin(){
+        boolean found = false;
+        PackageManager packageManager = getPackageManager();
+        Intent weixinIntent = new Intent(Intent.ACTION_SEND);
+        weixinIntent.setType("text/plain");
+        //query all the apps that ACTION_SEND can use
+        List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(weixinIntent, 0);
+        for(ResolveInfo resolveInfo : resolveInfoList){
+            String packageName = resolveInfo.activityInfo.packageName;
+            if(packageName.contains("tencent.mm")){
+                found = true;
+                weixinIntent.setPackage(packageName);
+                weixinIntent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle() + " (share from @知乎小报) "
+                        + ZhihuAPI.API_SHARE_LINK + mStoryId);
+                startActivity(weixinIntent);
+                break;
+            }
+        }
+        if(!found){
+            Toast.makeText(this, "Please install weixin first!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void shareToWeixinCircle(){
+        boolean found = false;
+        PackageManager packageManager = getPackageManager();
+        Intent weixinIntent = new Intent(Intent.ACTION_SEND);
+        weixinIntent.setType("image/*");
+        //query all the apps that ACTION_SEND can use
+        List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(weixinIntent, 0);
+        for(ResolveInfo resolveInfo : resolveInfoList){
+            String packageName = resolveInfo.activityInfo.packageName;
+            if(packageName.contains("tencent.mm")){
+                found = true;
+                weixinIntent.setComponent(new ComponentName(packageName, "com.tencent.mm.ui.tools.ShareToTimeLineUI"));
+                weixinIntent.putExtra("Kdescription", mNewsDetails.getTitle() + " (share from @知乎小报) "
+                        + ZhihuAPI.API_SHARE_LINK + mStoryId);
+                String fileName = "img_0053.png";
+                String completePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                                        + "/ZhihuSpider/" + fileName;
+                File file = new File(completePath);
+                Uri imageUri = Uri.fromFile(file);
+                weixinIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+                startActivity(weixinIntent);
+                break;
+            }
+        }
+        if(!found){
+            Toast.makeText(this, "Please install weixin first!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void shareToEmail(){
+        boolean found = false;
+        PackageManager packageManager = getPackageManager();
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        emailIntent.setType("text/plain");
+        //query all the apps that ACTION_SEND can use
+        List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(emailIntent, 0);
+        for(ResolveInfo resolveInfo : resolveInfoList){
+            String packageName = resolveInfo.activityInfo.packageName;
+            if(packageName.contains("mail")){
+                found = true;
+                emailIntent.setPackage(packageName);
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, mNewsDetails.getTitle());
+                emailIntent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle() + " (share from @知乎小报) "
+                        + ZhihuAPI.API_SHARE_LINK + mStoryId);
+                startActivity(emailIntent);
+                break;
+            }
+        }
+        if(!found){
+            Toast.makeText(this, "Please install email client first!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void shareToPocket() {
+        boolean found = false;
+        PackageManager packageManager = getPackageManager();
+        Intent pocketIntent = new Intent(Intent.ACTION_SEND);
+        pocketIntent.setType("text/plain");
+        //query all the apps that ACTION_SEND can use
+        List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(pocketIntent, 0);
+        for(ResolveInfo resolveInfo : resolveInfoList){
+            String packageName = resolveInfo.activityInfo.packageName;
+            if(packageName.contains("readitlater")){
+                found = true;
+                pocketIntent.setPackage(packageName);
+                pocketIntent.putExtra(Intent.EXTRA_TEXT, mNewsDetails.getTitle() + " (share from @知乎小报) "
+                        + ZhihuAPI.API_SHARE_LINK + mStoryId);
+                startActivity(pocketIntent);
+                break;
+            }
+        }
+        if(!found){
+            Toast.makeText(this, "Please install Pocket first!", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 
     @Override
@@ -617,6 +802,37 @@ public class StoryActivity extends AppCompatActivity implements ObservableScroll
         //  (it could be sharing the contents or going back to the former screen, for example).
     }
 
+
+    private void showShare() {
+        ShareSDK.initSDK(this);
+        OnekeyShare oks = new OnekeyShare();
+        //关闭sso授权
+        oks.disableSSOWhenAuthorize();
+
+        // 分享时Notification的图标和文字  2.5.9以后的版本不调用此方法
+        //oks.setNotification(R.drawable.ic_launcher, getString(R.string.app_name));
+        // title标题，印象笔记、邮箱、信息、微信、人人网和QQ空间使用
+        oks.setTitle(mNewsDetails.getTitle());
+        // titleUrl是标题的网络链接，仅在人人网和QQ空间使用
+        oks.setTitleUrl(ZhihuAPI.API_SHARE_LINK + mStoryId);
+        // text是分享文本，所有平台都需要这个字段
+        oks.setText(mNewsDetails.getTitle() + " (share from @知乎小报) " + ZhihuAPI.API_SHARE_LINK + mStoryId);
+        // imagePath是图片的本地路径，Linked-In以外的平台都支持此参数
+//        oks.setImagePath(Environment.getExternalStorageDirectory().getPath());//确保SDcard下面存在此张图片
+        // imageUrl是图片的网络路径，新浪微博、人人网、QQ空间和Linked-In支持此字段
+        oks.setImageUrl(mNewsDetails.getImageStringUri());
+        // url仅在微信（包括好友和朋友圈）中使用
+        oks.setUrl(ZhihuAPI.API_SHARE_LINK + mStoryId);
+        // comment是我对这条分享的评论，仅在人人网和QQ空间使用
+        oks.setComment("我是测试评论文本");
+        // site是分享此内容的网站名称，仅在QQ空间使用
+        oks.setSite("share from @知乎小报");
+        // siteUrl是分享此内容的网站地址，仅在QQ空间使用
+        oks.setSiteUrl(ZhihuAPI.API_SHARE_LINK + mStoryId);
+
+        // 启动分享GUI
+        oks.show(this);
+    }
 
 
 }
