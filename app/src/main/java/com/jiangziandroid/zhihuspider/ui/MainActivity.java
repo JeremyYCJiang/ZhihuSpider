@@ -152,7 +152,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
         mHomepageRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if(getSupportActionBar().getTitle().equals("知乎小报") &&
+                if(getSupportActionBar().getTitle().equals("知乎小报 by 江子") &&
                         mHomepageLayoutManager.findLastCompletelyVisibleItemPosition() ==
                                 mHomepageLayoutManager.getItemCount() - 1){
                     Toast.makeText(MainActivity.this, "Show last day's story!", Toast.LENGTH_LONG).show();
@@ -607,7 +607,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
     @Override
     public void onRefresh() {
         if(getSupportActionBar()!=null){
-            if(getSupportActionBar().getTitle().equals("知乎小报")) {
+            if(getSupportActionBar().getTitle().equals("知乎小报 by 江子")) {
                 getLatestNews();
             }
             else {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="weibo_oauth_regiseter">Authorization</string>
+   <!-- <string name="weibo_oauth_regiseter">Authorization</string>
     <string name="website">http://www.mob.com</string>
-    <string name="weibo_upload_content">分享图片</string>
+    <string name="weibo_upload_content">Share pictures</string>
     <string name="wechat_client_inavailable">Wechat client not exists or the version is too low</string>
     <string name="google_plus_client_inavailable">Google+ client not exists or the version is too low</string>
     <string name="qq_client_inavailable">Mobile QQ client not exists or the version is too low</string>
@@ -25,7 +25,7 @@
 	<string name="twitter">Twitter</string>
 	<string name="renren">Renren</string>
 	<string name="kaixin">Kaixin</string>
-	<string name="email">Email</string>
+	&lt;!&ndash;<string name="email">Email</string>&ndash;&gt;
 	<string name="shortmessage">Short Message</string>
 	<string name="sohumicroblog">Sohu Microblog</string>
 	<string name="neteasemicroblog">Netease Microblog</string>
@@ -67,5 +67,5 @@
 	<string name="mingdao_share_content">Share webpage</string>
 	<string name="share_to_mingdao">Share To Mingdao</string>
 	<string name="share_to_qzone_default">Shared from %s</string>
-	<string name="use_login_button">use login button instead</string>
+	<string name="use_login_button">use login button instead</string>-->
 </resources>

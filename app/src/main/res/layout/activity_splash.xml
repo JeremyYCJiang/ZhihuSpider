@@ -17,7 +17,6 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Text"
         android:id="@+id/imageSrcTextView"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
@@ -29,7 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="zhihuribao"
+        android:text="@string/title_splash"
         android:id="@+id/appLabelTextView"
         android:layout_above="@+id/imageSrcTextView"
         android:layout_centerHorizontal="true"
